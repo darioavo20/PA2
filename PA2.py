@@ -28,9 +28,22 @@ def file_reader():
         print(f"Error reading file: {e}")
         return None, None, None, None
     
+def find_legal_moves(board):
+    legal = []
+    for i in range(len(board[0])):
+        for j in range(len(board)):
+            if board[j][i] == 'O' and j == len(board)-1:
+                legal.append((j,i))
+                break
+            if board[j][i] == 'O' and board[j+1][i] != 'O':
+                legal.append((j,i))
+                break
+    return legal
+    
 def main():
     algo, arg, turn, board = file_reader()
-    
+    legal = find_legal_moves(board)
+    print(legal)
 
 if __name__ == "__main__":
     main()
