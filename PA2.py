@@ -28,6 +28,7 @@ def file_reader():
         print(f"Error reading file: {e}")
         return None, None, None, None
     
+# finds legal moves for a given board and returns a list containing tuples for those moves
 def find_legal_moves(board):
     legal = []
     for i in range(len(board[0])):
@@ -39,11 +40,34 @@ def find_legal_moves(board):
                 legal.append((j,i))
                 break
     return legal
-    
+
+# Checks if someone has won the game 
+# TODO: account for full board (game over)
+def checkWin(board):
+    height = len(board)
+    width = len(board[0])
+    red = 'R'
+    yellow = 'Y'
+
+    # check for horizontal win
+    for i in range(height):
+        for j in range(width - 3):
+            if board[i][j] == red and board[i+1][j] == red and board[i+2][j] == red and board[i+3][j] == red:
+                return red
+            if board[i][j] == yellow and board[i+1][j] == yellow and board[i+2][j] == yellow and board[i+3][j] == yellow:
+                return yellow
+            
 def main():
     algo, arg, turn, board = file_reader()
     legal = find_legal_moves(board)
-    print(legal)
+    
+    win = checkWin(board)
+    if win == 'R':
+        print("Red wins")
+    elif win == 'Y':
+        print("Yellow wins")
+    else:
+        print("No win")
 
 if __name__ == "__main__":
     main()
