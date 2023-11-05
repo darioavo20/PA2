@@ -3,8 +3,7 @@ import numpy as np
 # Function to read in test case
 def file_reader():
     try:
-        #file_name = input("Enter the file name you wish to test: ")
-        file_name = "test1.txt"
+        file_name = input("Enter the file name you wish to test: ")
         board = [[string for string in range(7)] for string in range(6)]
         for i in range(6):
             for j in range(7):
@@ -52,11 +51,35 @@ def checkWin(board):
     # check for horizontal win
     for i in range(height):
         for j in range(width - 3):
+            if board[i][j] == red and board[i][j+1] == red and board[i][j+2] == red and board[i][j+3] == red:
+                return red
+            if board[i][j] == yellow and board[i][j+1] == yellow and board[i][j+2] == yellow and board[i][j+3] == yellow:
+                return yellow
+            
+    # check for vertical win
+    for i in range(height-3):
+        for j in range(width):
             if board[i][j] == red and board[i+1][j] == red and board[i+2][j] == red and board[i+3][j] == red:
                 return red
             if board[i][j] == yellow and board[i+1][j] == yellow and board[i+2][j] == yellow and board[i+3][j] == yellow:
                 return yellow
             
+    #check for / diagonal wins
+    for i in range(3, height):
+        for j in range(width -3):
+            if board[i][j] == red and board[i-1][j+1] == red and board[i-2][j+2] == red and board[i-3][j+3] == red:
+                return red
+            if board[i][j] == yellow and board[i-1][j+1] == yellow and board[i-2][j+2] == yellow and board[i-3][j+3] == yellow:
+                return yellow
+            
+    #check for \ diagonal wins
+    for i in range(height-3):
+        for j in range(width-3):
+            if board[i][j] == red and board[i+1][j+1] == red and board[i+2][j+2] == red and board[i+3][j+3] == red:
+                return red
+            if board[i][j] == yellow and board[i+1][j+1] == yellow and board[i+2][j+2] == yellow and board[i+3][j+3] == yellow:
+                return yellow
+
 def main():
     algo, arg, turn, board = file_reader()
     legal = find_legal_moves(board)
