@@ -47,6 +47,7 @@ def checkWin(board):
     width = len(board[0])
     red = 'R'
     yellow = 'Y'
+    draw = True
 
     # check for horizontal win
     for i in range(height):
@@ -79,6 +80,15 @@ def checkWin(board):
                 return red
             if board[i][j] == yellow and board[i+1][j+1] == yellow and board[i+2][j+2] == yellow and board[i+3][j+3] == yellow:
                 return yellow
+            
+    #check for draw
+    for i in range(height):
+        for j in range(width):
+            if board[i][j] == 'O':
+                draw = False
+    
+    if draw:
+        return 'D'
 
 def main():
     algo, arg, turn, board = file_reader()
@@ -89,6 +99,8 @@ def main():
         print("Red wins")
     elif win == 'Y':
         print("Yellow wins")
+    elif win == 'D':
+        print("Draw")
     else:
         print("No win")
 
