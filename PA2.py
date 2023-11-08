@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+import random
 
 # Function to read in test case
 def file_reader(file_name):
@@ -20,7 +21,6 @@ def file_reader(file_name):
                     if column == 7:
                         break
                     board[row][column] = char
-            print(board)
         return algo, arg, turn, board
             
     except Exception as e:
@@ -41,7 +41,6 @@ def find_legal_moves(board):
     return legal
 
 # Checks if someone has won the game 
-# TODO: account for full board (game over)
 def checkWin(board):
     height = len(board)
     width = len(board[0])
@@ -89,22 +88,47 @@ def checkWin(board):
     
     if draw:
         return 'D'
+    else:
+        return 'N'
+    
+def uniform_random(board, turn):
+    while(checkWin(board) == 'N'):
+        moves = find_legal_moves(board)
+        chosen_move = random.randint(0,len(moves)-1)
+        row = moves[chosen_move][0]
+        col = moves[chosen_move][1]
+        board[row][col] = turn
+        print(board)
+        print('Move selected',col)
+        if turn == 'R':
+            print("Yellow turn now")
+            turn = 'Y'
+        if turn == 'Y':
+            print("Red turn now")
+            turn == 'R'
 
 def main():
     file_name = sys.argv[1]
     output_type = sys.argv[2]
     algo, arg, turn, board = file_reader(file_name)
-    legal = find_legal_moves(board)
-    
-    win = checkWin(board)
-    if win == 'R':
-        print("Red wins")
-    elif win == 'Y':
-        print("Yellow wins")
-    elif win == 'D':
-        print("Draw")
-    else:
-        print("No win")
+    print(board)
+    print(turn)
+    print(type(turn))
+    if turn == 'R':
+        print("Correct")
+    uniform_random(board,turn)
+    if algo == 'UR':
+        print("hello")
+        
+    # win = checkWin(board)
+    # if win == 'R':
+    #     print("Red wins")
+    # elif win == 'Y':
+    #     print("Yellow wins")
+    # elif win == 'D':
+    #     print("Draw")
+    # elif win == 'N':
+    #     print("No win")
 
 if __name__ == "__main__":
     main()
