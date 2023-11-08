@@ -1,9 +1,9 @@
 import numpy as np
+import sys
 
 # Function to read in test case
-def file_reader():
+def file_reader(file_name):
     try:
-        file_name = input("Enter the file name you wish to test: ")
         board = [[string for string in range(7)] for string in range(6)]
         for i in range(6):
             for j in range(7):
@@ -91,7 +91,9 @@ def checkWin(board):
         return 'D'
 
 def main():
-    algo, arg, turn, board = file_reader()
+    file_name = sys.argv[1]
+    output_type = sys.argv[2]
+    algo, arg, turn, board = file_reader(file_name)
     legal = find_legal_moves(board)
     
     win = checkWin(board)
