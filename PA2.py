@@ -2,6 +2,39 @@ import numpy as np
 import sys
 import random
 
+class node():
+    def __init__(self, i_depth, board, player, i_heuristic):
+        self.i_depth = i_depth
+        self.i_heuristic = i_heuristic
+        self.board = board
+        self.player = player
+        self.children = [] # list of nodes 
+
+    def playMove(node,moves):
+        tempboard = node.board
+        player = node.player
+        for move in moves:
+            tempboard[move[0]][move[1]] = node.player
+        return tempboard
+    
+    def getOppositePlayer(self):
+        if self.player == 'Y':
+            return 'R'
+        else:
+            return 'Y'
+    
+       #Recursive function to 
+    def createPermutations(self):
+        if self.i_depth >= 0:
+            legal = find_legal_moves(self.board)
+            for index in legal:
+                self.children.append(node(self.i_depth-1,self.playMove(legal),self.getOppositePlayer(),self.i_heuristic))
+                print(f'{self.board} \n')
+            for child in self.children:
+                child.createPermutations()
+
+        
+
 # Function to read in test case
 def file_reader(file_name):
     try:
@@ -118,11 +151,11 @@ def main():
     file_name = sys.argv[1]
     output_type = sys.argv[2]
     algo, arg, turn, board = file_reader(file_name)
-    print(board)
-    if 'R' in turn:
-        turn = 'R'
-    if 'Y' in turn:
-        turn = 'Y' 
+
+    if 'DLMM' in algo:
+        root = node(int(arg),board,turn,0)
+        legal = find_legal_moves(root.board)
+        root.createPermutations()
         
     if 'UR' in algo:
         uniform_random(board,turn)
