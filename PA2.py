@@ -103,22 +103,29 @@ def uniform_random(board, turn):
         if turn == 'R':
             print("Yellow turn now")
             turn = 'Y'
-        if turn == 'Y':
+        elif turn == 'Y':
             print("Red turn now")
-            turn == 'R'
+            turn = 'R'
+    
+    if checkWin(board) == 'Y':
+        print("yellow wins")
+    elif checkWin(board) == 'R':
+        print("red wins")
+    else:
+        print("draw") 
 
 def main():
     file_name = sys.argv[1]
     output_type = sys.argv[2]
     algo, arg, turn, board = file_reader(file_name)
     print(board)
-    print(turn)
-    print(type(turn))
-    if turn == 'R':
-        print("Correct")
-    uniform_random(board,turn)
-    if algo == 'UR':
-        print("hello")
+    if 'R' in turn:
+        turn = 'R'
+    if 'Y' in turn:
+        turn = 'Y' 
+        
+    if 'UR' in algo:
+        uniform_random(board,turn)
         
     # win = checkWin(board)
     # if win == 'R':
