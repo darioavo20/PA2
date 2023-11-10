@@ -25,19 +25,37 @@ class node():
     
        #Recursive function to 
     def createPermutations(self):
-        if self.i_depth >= 0:
+        if self.i_depth <= 0:
             legal = find_legal_moves(self.board)
             for index in legal:
                 new_board = self.playMove([index])  # Pass a specific move instead of the entire list
                 new_player = self.getOppositePlayer()  # Get the opposite player for the new node
-                self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic))
+                self.children.append(node(self.i_depth+1, new_board, new_player, self.i_heuristic))
                 print(f'{self.board} \n')
             
             for child in self.children:
                 child.createPermutations()
     
-    def getHeuristic(self):
-        opponent = 'R' if self.player == 'Y' else 'Y'
+    #def getHeuristic(self):
+        #opponent = 'R' if self.player == 'Y' else 'Y'
+
+        #if checkWin(self.board) == "Y":
+        #   print("yellow wins")
+        #else:
+        #    print("red wins ")
+        
+        #self.i_heuristic += self.count_connected(self.player)
+
+    #def count_consecutive(self):
+
+    def backprop(self):
+        
+        
+        pass
+
+
+        
+        
 
         
 
