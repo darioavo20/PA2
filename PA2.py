@@ -28,10 +28,16 @@ class node():
         if self.i_depth >= 0:
             legal = find_legal_moves(self.board)
             for index in legal:
-                self.children.append(node(self.i_depth-1,self.playMove(legal),self.getOppositePlayer(),self.i_heuristic))
+                new_board = self.playMove([index])  # Pass a specific move instead of the entire list
+                new_player = self.getOppositePlayer()  # Get the opposite player for the new node
+                self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic))
                 print(f'{self.board} \n')
+            
             for child in self.children:
                 child.createPermutations()
+    
+    def getHeuristic(self):
+        opponent = 'R' if self.player == 'Y' else 'Y'
 
         
 
@@ -54,6 +60,8 @@ def file_reader(file_name):
                     if column == 7:
                         break
                     board[row][column] = char
+
+        print(f'starting Board:\n {board} \n')
         return algo, arg, turn, board
             
     except Exception as e:
@@ -157,18 +165,9 @@ def main():
         legal = find_legal_moves(root.board)
         root.createPermutations()
         
+        
     if 'UR' in algo:
         uniform_random(board,turn)
-        
-    # win = checkWin(board)
-    # if win == 'R':
-    #     print("Red wins")
-    # elif win == 'Y':
-    #     print("Yellow wins")
-    # elif win == 'D':
-    #     print("Draw")
-    # elif win == 'N':
-    #     print("No win")
 
 if __name__ == "__main__":
     main()
