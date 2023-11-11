@@ -192,16 +192,19 @@ def print_board(board):
         print(' '.join(row))
     print()
 
-def pmcgs(board, turn):
-    pmcgs_ai = PMCGS(board, turn)
-    pmcgs_ai.print_connect_four_board(board)
-    if pmcgs_ai.select(pmcgs_ai.root) == -1:
-        pmcgs_ai.expand(pmcgs_ai.root)
+def pmcgs(board, turn, verbose):
+    pmcgs_ai = PMCGS(board, turn, verbose)
+    i = 0
+    while i < 100:
+        if pmcgs_ai.select(pmcgs_ai.root) == -1:
+            pmcgs_ai.expand(pmcgs_ai.root)
+        
+        selection = pmcgs_ai.select(pmcgs_ai.root)
+        result = pmcgs_ai.simulate(selection)
+        pmcgs_ai.backprop(selection, result)
+        print("_____________________________________________________")
+        i += 1
     
-    selection = pmcgs_ai.select(pmcgs_ai.root)
-    result = pmcgs_ai.simulate(selection)
-    pmcgs_ai.backprop(selection, result)
-   
         
 
 def main():
@@ -216,7 +219,10 @@ def main():
         root.backprop(arg)
 
     if "PMCGS" in algo:
-        pmcgs(board, turn)
+        if output_type == "verbose":
+            pmcgs(board, turn, True)
+        else:
+            pmcgs(board, turn, False)
 
     if 'UR' in algo:
         uniform_random(board,turn)

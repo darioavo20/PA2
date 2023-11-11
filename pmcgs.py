@@ -2,7 +2,7 @@ import random
 import copy
 from termcolor import colored
 
- # Bottom of the board
+
 
 
 class Node:
@@ -17,10 +17,11 @@ class Node:
 
     
 class PMCGS:
-    def __init__(self, root_state, turn):
+    def __init__(self, root_state, turn, verbose = False):
         self.root = Node(root_state)
-        self.turn = turn
-
+        self.turn = turn #turn that updates every move
+        self.verbose = verbose
+        self.start_turn = turn #this is the player's turn at the start
     def select(self, node):
         if node.children:
             self.switch_turn()
@@ -34,8 +35,10 @@ class PMCGS:
         legal_moves = self.find_legal_moves(node.state)
         for move in legal_moves:
             new_state = self.apply_move(node.state, move)
-            child_node = Node(new_state, parent = node)
+            child_node = Node(new_state, parent=node)
             node.children.append(child_node)
+            if self.verbose:
+                print("NODE ADDED")
 
     def apply_move(self,state,move):
         new_state = copy.deepcopy(state)
@@ -48,28 +51,29 @@ class PMCGS:
 
     def simulate(self, node):
         current_state = copy.deepcopy(node.state)
-        
-
         while True:
-            self.switch_turn()
+            
+            if self.verbose:
+                print("New state in simulation")
+                self.print_connect_four_board(current_state)
+
             winner = self.checkWin(current_state)
-            print("New state in simulation")
-            self.print_connect_four_board(current_state)
-            print()
-            if winner != 'N':  
-                
-                if winner == self.turn:
-                    return 1  
-                elif winner == 'D':
-                    return 0  
-                else:
-                    return -1  
+            if winner != 'N':
+                terminal_value = 1 if winner == self.start_turn else -1 if winner != 'D' else 0
+                if self.verbose:
+                    print(f"TERMINAL NODE VALUE: {terminal_value}")
+                return terminal_value
+
             legal_moves = self.find_legal_moves(current_state)
-            if not legal_moves: 
-                return 0  
+            if not legal_moves:
+                if self.verbose:
+                    print("TERMINAL NODE VALUE: 0")  # Draw
+                return 0
+            self.switch_turn()
             move = random.choice(legal_moves)
             current_state = self.apply_move(current_state, move)
-            print(self.turn)  
+            if self.verbose:
+                print(f"Move selected: {move}, Current turn: {self.turn}")
             
 
 
@@ -82,8 +86,8 @@ class PMCGS:
                 node.losses += 1
             else:
                 node.draws += 1
-
-            
+            if self.verbose:
+                print(f"Updated values:\nwi: {node.wins}\nni: {node.visits}")
             node = node.parent
 
     def checkWin(self, board):
@@ -159,7 +163,7 @@ class PMCGS:
                 else:
                     colored_cell = " "
                 print(f" {colored_cell} |", end="")
-            print()  # Newline after each row
+            print()  
         print("-" * (len(board[0]) * 4 + 1)) 
 
     
