@@ -4,12 +4,13 @@ import random
 from pmcgs import PMCGS
 
 class node():
-    def __init__(self, i_depth, board, player, i_heuristic):
+    def __init__(self, i_depth, board, player, i_heuristic, parent = None):
         self.i_depth = i_depth
         self.i_heuristic = i_heuristic
         self.board = board
         self.player = player
         self.children = [] # list of nodes 
+        self.parent = parent
 
     def playMove(node,moves):
         tempboard = node.board
@@ -31,8 +32,8 @@ class node():
             for index in legal:
                 new_board = self.playMove([index])  # Pass a specific move instead of the entire list
                 new_player = self.getOppositePlayer()  # Get the opposite player for the new node
-                self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic))
-                print(f'{self.board} \n')
+                self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic,self))
+                #print(f'{self.board} \n')
             
             for child in self.children:
                 child.createPermutations()
@@ -49,16 +50,28 @@ class node():
 
     #def count_consecutive(self):
 
-    def backprop(self):
-        
-        
-        pass
+    def backprop(self, arg):
+        temp = self
+        testcheck = 0
 
+        # Traverse the tree to find the leaf node
+        while temp.children:
+            print(f"Testing we are inside backprop")
+            testcheck += 1
+            temp = temp.children[0]  # Assuming you want to go down the first child
 
-        
-        
+        print(testcheck)
 
-        
+        # Now, temp is the leaf node, and you can perform backpropagation
+        # For example, you might update the value of the leaf node based on arg
+        temp.value = arg
+
+        # Perform backpropagation to update the values of parent nodes
+        while temp.parent:
+            temp = temp.parent
+            # Perform any necessary updates based on the value of temp's children
+            # For example, you might update temp's value based on the values of its children
+            #temp.value = max(child.value for child in temp.children)  # Update value as an example
 
 # Function to read in test case
 def file_reader(file_name):
@@ -194,6 +207,7 @@ def main():
         root = node(int(arg),board,turn,0)
         legal = find_legal_moves(root.board)
         root.createPermutations()
+        root.backprop(arg)
 
     if "PMCGS" in algo:
         pmcgs(board, turn)
