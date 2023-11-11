@@ -200,9 +200,9 @@ def print_board(board):
     print()
 
 def pmcgs(board, turn, verbose):
-    pmcgs_ai = PMCGS(board, turn, verbose)
+    pmcgs_ai = PMCGS(board, turn.strip(), verbose)
     i = 0
-    while i < 100:
+    while i < 1:
         if pmcgs_ai.select(pmcgs_ai.root) == -1:
             pmcgs_ai.expand(pmcgs_ai.root)
         
@@ -211,6 +211,7 @@ def pmcgs(board, turn, verbose):
         pmcgs_ai.backprop(selection, result)
         print("_____________________________________________________")
         i += 1
+    
     
         
 
