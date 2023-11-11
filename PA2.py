@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import random
+from pmcgs import PMCGS
 
 class node():
     def __init__(self, i_depth, board, player, i_heuristic):
@@ -173,6 +174,21 @@ def uniform_random(board, turn):
     else:
         print("draw") 
 
+def print_board(board):
+    for row in board:
+        print(' '.join(row))
+    print()
+
+def pmcgs(board, turn):
+    pmcgs_ai = PMCGS(board, turn)
+    if pmcgs_ai.select(pmcgs_ai.root) == -1:
+        print("Expanding root node...")
+        pmcgs_ai.expand(pmcgs_ai.root)
+        print("Children of root node after expansion:")
+        for index, child in enumerate(pmcgs_ai.root.children):
+            print(f"Child {index + 1}:")
+            print_board(child.state)
+
 def main():
     file_name = sys.argv[1]
     output_type = sys.argv[2]
@@ -182,8 +198,10 @@ def main():
         root = node(int(arg),board,turn,0)
         legal = find_legal_moves(root.board)
         root.createPermutations()
-        
-        
+
+    if "PMCGS" in algo:
+        pmcgs(board, turn)
+
     if 'UR' in algo:
         uniform_random(board,turn)
 
