@@ -194,8 +194,14 @@ def print_board(board):
 
 def pmcgs(board, turn):
     pmcgs_ai = PMCGS(board, turn)
+    pmcgs_ai.print_connect_four_board(board)
     if pmcgs_ai.select(pmcgs_ai.root) == -1:
         pmcgs_ai.expand(pmcgs_ai.root)
+    
+    selection = pmcgs_ai.select(pmcgs_ai.root)
+    result = pmcgs_ai.simulate(selection)
+    pmcgs_ai.backprop(selection, result)
+   
         
 
 def main():
