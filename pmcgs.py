@@ -24,7 +24,7 @@ class PMCGS:
         self.start_turn = turn #this is the player's turn at the start
     def select(self, node):
         if node.children:
-            self.switch_turn()
+            
             return random.choice(node.children)
         else:
             return -1
@@ -60,6 +60,9 @@ class PMCGS:
             winner = self.checkWin(current_state)
             if winner != 'N':
                 terminal_value = 1 if winner == self.start_turn else -1 if winner != 'D' else 0
+                print(self.start_turn)
+                print("WTF")
+                print(winner)
                 if self.verbose:
                     print(f"TERMINAL NODE VALUE: {terminal_value}")
                 return terminal_value
@@ -93,8 +96,8 @@ class PMCGS:
     def checkWin(self, board):
         height = len(board)
         width = len(board[0])
-        red = 'R'
-        yellow = 'Y'
+        red = "R"
+        yellow = "Y"
         draw = True
 
         # check for horizontal win
