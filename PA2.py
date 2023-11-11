@@ -164,7 +164,14 @@ def checkWin(board):
     else:
         return 'N'
     
-def uniform_random(board, turn):
+def uniform_random(board, turn, alternating):
+    if alternating:
+        moves = find_legal_moves(board)
+        chosen_move = random.randint(0,len(moves)-1)
+        row = moves[chosen_move][0]
+        col = moves[chosen_move][1]
+        board[row][col] = turn
+        return board
     while(checkWin(board) == 'N'):
         moves = find_legal_moves(board)
         chosen_move = random.randint(0,len(moves)-1)
@@ -215,6 +222,8 @@ def pmcgs(board, turn, verbose):
 def main():
     file_name = sys.argv[1]
     output_type = sys.argv[2]
+    #preset by programmer for testing purposes
+    alternating = False
     algo, arg, turn, board = file_reader(file_name)
 
     if 'DLMM' in algo:
@@ -230,7 +239,7 @@ def main():
             pmcgs(board, turn, False)
 
     if 'UR' in algo:
-        uniform_random(board,turn)
+        uniform_random(board,turn,alternating)
 
 if __name__ == "__main__":
     main()
