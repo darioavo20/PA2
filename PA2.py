@@ -182,12 +182,8 @@ def print_board(board):
 def pmcgs(board, turn):
     pmcgs_ai = PMCGS(board, turn)
     if pmcgs_ai.select(pmcgs_ai.root) == -1:
-        print("Expanding root node...")
         pmcgs_ai.expand(pmcgs_ai.root)
-        print("Children of root node after expansion:")
-        for index, child in enumerate(pmcgs_ai.root.children):
-            print(f"Child {index + 1}:")
-            print_board(child.state)
+        
 
 def main():
     file_name = sys.argv[1]
