@@ -24,7 +24,6 @@ class PMCGS:
         self.start_turn = turn #this is the player's turn at the start
     def select(self, node):
         if node.children:
-            
             return random.choice(node.children)
         else:
             return -1
@@ -55,14 +54,11 @@ class PMCGS:
             
             if self.verbose:
                 print("New state in simulation")
-                self.print_connect_four_board(current_state)
+                
 
             winner = self.checkWin(current_state)
             if winner != 'N':
                 terminal_value = 1 if winner == self.start_turn else -1 if winner != 'D' else 0
-                print(self.start_turn)
-                print("WTF")
-                print(winner)
                 if self.verbose:
                     print(f"TERMINAL NODE VALUE: {terminal_value}")
                 return terminal_value
@@ -168,6 +164,37 @@ class PMCGS:
                 print(f" {colored_cell} |", end="")
             print()  
         print("-" * (len(board[0]) * 4 + 1)) 
+
+    def choose_best_move(self):
+        best_move = None
+        best_score = -float('inf')  
+
+       
+        for child in self.root.children:
+            if child.visits > 0:
+                
+                score = child.wins / child.visits  
+
+                if score > best_score:
+                    best_score = score
+                    best_move = self.get_move_from_state(self.root.state, child.state)
+
+        return best_move + 1
+
+    def get_move_from_state(self, parent_state, child_state):
+        for i in range(len(parent_state)):
+            for j in range(len(parent_state[i])):
+                if parent_state[i][j] != child_state[i][j]:
+                    return j 
+                
+    def print_move_scores(self):
+        print("Move Scores:")
+        for i, child in enumerate(self.root.children, start=1):
+            if child.visits > 0:
+                score = (child.wins - child.losses) / child.visits
+                print(f"Column {i}: {score:.2f}")
+            else:
+                print(f"Column {i}: Null")
 
     
 

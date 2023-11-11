@@ -195,7 +195,7 @@ def print_board(board):
 def pmcgs(board, turn, verbose):
     pmcgs_ai = PMCGS(board, turn.strip(), verbose)
     i = 0
-    while i < 1:
+    while i < 100:
         if pmcgs_ai.select(pmcgs_ai.root) == -1:
             pmcgs_ai.expand(pmcgs_ai.root)
         
@@ -204,6 +204,10 @@ def pmcgs(board, turn, verbose):
         pmcgs_ai.backprop(selection, result)
         print("_____________________________________________________")
         i += 1
+    
+    best_move = pmcgs_ai.choose_best_move()
+    pmcgs_ai.print_move_scores()
+    print("FINAL Move selected: ", best_move)
     
     
         
