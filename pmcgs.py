@@ -192,9 +192,11 @@ class PMCGS:
         for i, child in enumerate(self.root.children, start=1):
             if child.visits > 0:
                 score = (child.wins - child.losses) / child.visits
-                print(f"Column {i}: {score:.2f}")
+                if self.verbose:
+                    print(f"Column {i}: {score:.2f}")
             else:
-                print(f"Column {i}: Null")
+                if self.verbose:
+                    print(f"Column {i}: Null")
     
     def uct_select(self, node):
         if not node.children:
