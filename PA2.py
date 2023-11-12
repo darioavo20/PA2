@@ -143,7 +143,7 @@ def file_reader(file_name):
             lines = file.readlines()
             remaining = lines[3:]
             algo = lines[0]
-            print(algo)
+            #print(algo)
             arg = lines[1]
             turn = lines[2]
             for row, line in enumerate(remaining):
@@ -152,7 +152,7 @@ def file_reader(file_name):
                         break
                     board[row][column] = char
 
-        print(f'starting Board:\n {board} \n')
+        #print(f'starting Board:\n {board} \n')
         return algo, arg, turn, board
             
     except Exception as e:
@@ -335,12 +335,9 @@ def test_results(board, turn):
             ur_pmcgs500_losses += 1
         else:
             ur_pmcgs500_draws += 1
-<<<<<<< HEAD
         board = empty_board
     
-=======
         board = deepcopy(empty_board)
->>>>>>> 87a3453a5036cf4021e5ec2cac391cfe8c0d8df1
     print('UR wins', ur_pmcgs500_wins)
     print("UR win%:", ur_pmcgs500_wins/100)
     print("PMCGS500 wins", ur_pmcgs500_losses)
@@ -356,6 +353,7 @@ def find_tree_move(board, pmcgs_move):
     
 # method to play with human player
 def play_human_pmcgs(board):
+    print(board)
     while(True):
         print('Play one of the following legal moves')
         moves = find_legal_moves(board)
@@ -388,8 +386,10 @@ def main():
     #preset by programmer for testing purposes
     alternating = False
     algo, arg, turn, board = file_reader(file_name)
-    play_human_pmcgs(board)
-    test_results(board, turn)
+    play_human = input("Would you like to play against an algorithm? (Input then number associated with the desired option) \n 1. PMCGS 10000 \n 2. UCT 10000 \n 3. No \n")
+    if play_human == "1":
+        play_human_pmcgs(board)
+        sys.exit()
     run_tournament = input("Would you like to run the algo tournament (y/n)")
     if run_tournament == 'y':
         test_results(board, turn)
