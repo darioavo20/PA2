@@ -216,7 +216,22 @@ def pmcgs(board, turn, verbose):
     pmcgs_ai.print_move_scores()
     print("FINAL Move selected: ", best_move)
     
+def uct(board, turn, verbose):
+    uct_ai = PMCGS(board, turn.strip(), verbose)
+    i = 0
+    while i < 100:
+        if uct_ai.uct_select(uct_ai.root) == -1:
+            uct_ai.expand(uct_ai.root)
+        
+        selection = uct_ai.uct_select(uct_ai.root)
+        result = uct_ai.simulate(selection)
+        uct_ai.backprop(selection, result)
+        print("_____________________________________________________")
+        i += 1
     
+    best_move = uct_ai.choose_best_move()
+    uct_ai.print_move_scores()
+    print("FINAL Move selected: ", best_move)
         
 
 def main():
@@ -237,6 +252,12 @@ def main():
             pmcgs(board, turn, True)
         else:
             pmcgs(board, turn, False)
+
+    if "UCT" in algo:
+        if output_type == "verbose":
+            uct(board, turn, True)
+        else:
+            uct(board, turn, False)
 
     if 'UR' in algo:
         uniform_random(board,turn,alternating)

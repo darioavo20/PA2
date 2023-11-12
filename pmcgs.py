@@ -1,7 +1,7 @@
 import random
 import copy
 from termcolor import colored
-
+import math
 
 
 
@@ -195,10 +195,28 @@ class PMCGS:
                 print(f"Column {i}: {score:.2f}")
             else:
                 print(f"Column {i}: Null")
-
     
+    def uct_select(self, node):
+        if not node.children:
+            return -1
 
+        best_ucb_value = float('-inf')
+        best_child = None
 
+        for child in node.children:
+            ucb_value = self.ucb_value(child, node.visits)
+            if ucb_value > best_ucb_value:
+                best_ucb_value = ucb_value
+                best_child = child
+
+        return best_child
+
+    def ucb_value(self, child, total_visits):
+        c = 1
+        if child.visits == 0:
+            return float('inf')  
+        win_ratio = child.wins / child.visits
+        return win_ratio + c * math.sqrt(math.log(total_visits) / child.visits)
 
 
   
