@@ -37,18 +37,64 @@ class node():
             
             for child in self.children:
                 child.createPermutations()
-    
-    #def getHeuristic(self):
-        #opponent = 'R' if self.player == 'Y' else 'Y'
 
-        #if checkWin(self.board) == "Y":
-        #   print("yellow wins")
-        #else:
-        #    print("red wins ")
+    def getHeuristic(self):
+        opponent = 'R' if self.player == 'Y' else 'Y'
+
+        winner = checkWin(self.board)
+        if winner == "red":
+            print("Red wins")
+            return float('inf')  # Assign a high value for winning state
+        elif winner == "yellow":
+            print("Yellow wins")
+            return -float('inf')  # Assign a low value for losing state
+        elif all(cell != 'O' for row in self.board for cell in row):
+            return 0  # Assign a value for a draw
+        else:
+            return self.count_consecutive_total()
         
-        #self.i_heuristic += self.count_connected(self.player)
+    def count_consecutive_total(self):
+        count = 0
 
-    #def count_consecutive(self):
+        # Check horizontally
+        for row in self.board:
+            count += self.count_consecutive(row)
+
+        # Check vertically
+        for col in range(len(self.board[0])):
+            column = [self.board[row][col] for row in range(len(self.board))]
+            count += self.count_consecutive(column)
+
+        # Check diagonally (top-left to bottom-right)
+        for row in range(len(self.board) - 1):
+            for col in range(len(self.board[0]) - 1):
+                diagonal = [self.board[row + i][col + i] for i in range(min(len(self.board) - row, len(self.board[0]) - col))]
+                count += self.count_consecutive(diagonal)
+
+        # Check diagonally (top-right to bottom-left)
+        for row in range(len(self.board) - 1):
+            for col in range(1, len(self.board[0])):
+                diagonal = [self.board[row + i][col - i] for i in range(min(len(self.board) - row, col + 1))]
+                count += self.count_consecutive(diagonal)
+
+        return count
+
+    def count_consecutive(self, line):
+        count = 0
+        current_player = self.player
+        consecutive_count = 0
+
+        for cell in line:
+            if cell == current_player:
+                consecutive_count += 1
+            else:
+                consecutive_count = 0
+
+            if consecutive_count >= 4:
+                count += 1
+
+        return count
+
 
     def backprop(self, arg):
         temp = self
@@ -56,23 +102,32 @@ class node():
 
         # Traverse the tree to find the leaf node
         while temp.children:
-            print(f"Testing we are inside backprop")
-            testcheck += 1
-            temp = temp.children[0]  # Assuming you want to go down the first child
-
-        print(testcheck)
-
-        # Now, temp is the leaf node, and you can perform backpropagation
-        # For example, you might update the value of the leaf node based on arg
-        temp.value = arg
+            temp = temp.children[0]
 
         # Perform backpropagation to update the values of parent nodes
         while temp.parent:
-            temp = temp.parent
-            # Perform any necessary updates based on the value of temp's children
-            # For example, you might update temp's value based on the values of its children
-            #temp.value = max(child.value for child in temp.children)  # Update value as an example
+            temp.i_heuristic = temp.getHeuristic()
 
+            # Check if there are children before finding the maximum value
+            if temp.children:
+                for count, child in enumerate(temp.children):
+                    print(f"column{count}: {child.i_heuristic} \n")
+
+                # Check for a tie
+                if all(child.i_heuristic == -1 for child in temp.children):
+                    temp.i_heuristic = -1
+                    print("It's a tie!")
+                    break  # Exit the loop in case of a tie
+
+                # Continue with the maximum or minimum value based on the player
+                if temp.parent.player == "Y":
+                    temp.i_heuristic = max(child.i_heuristic for child in temp.children)
+                    print(f"Move Selected: {temp.i_heuristic}")
+                else:
+                    temp.i_heuristic = min(child.i_heuristic for child in temp.children)
+                    print(f"Move Selected: {temp.i_heuristic}")
+
+            temp = temp.parent
 # Function to read in test case
 def file_reader(file_name):
     try:
