@@ -2,6 +2,8 @@ import numpy as np
 import sys
 import random
 from pmcgs import PMCGS
+from copy import deepcopy
+
 
 class node():
     def __init__(self, i_depth, board, player, i_heuristic, parent = None):
@@ -292,7 +294,7 @@ def uct(board, turn, arg, verbose):
     return best_move
 
 def test_results(board, turn):
-    empty_board = board
+    empty_board = deepcopy(board)
     if 'R' in turn:
         turn = 'R'
     if 'Y' in turn:
@@ -308,9 +310,7 @@ def test_results(board, turn):
             ur_row = ur_move[0]
             ur_col = ur_move[1]
             board[ur_row][ur_col] = turn
-            print(board)
-            print(turn)
-            print(checkWin(board))
+
             if checkWin(board) != 'N': 
                 break
             if turn == 'R':
@@ -322,9 +322,7 @@ def test_results(board, turn):
             pmcgs_row = full_pmcgs_move[0]
             pmcgs_col = full_pmcgs_move[1]
             board[pmcgs_row][pmcgs_col] = turn
-            print(board)
-            print(turn)
-            print(checkWin(board))
+
             if checkWin(board) != 'N': 
                 break
             if turn == 'R':
@@ -337,8 +335,12 @@ def test_results(board, turn):
             ur_pmcgs500_losses += 1
         else:
             ur_pmcgs500_draws += 1
+<<<<<<< HEAD
         board = empty_board
     
+=======
+        board = deepcopy(empty_board)
+>>>>>>> 87a3453a5036cf4021e5ec2cac391cfe8c0d8df1
     print('UR wins', ur_pmcgs500_wins)
     print("UR win%:", ur_pmcgs500_wins/100)
     print("PMCGS500 wins", ur_pmcgs500_losses)
@@ -386,8 +388,14 @@ def main():
     #preset by programmer for testing purposes
     alternating = False
     algo, arg, turn, board = file_reader(file_name)
+<<<<<<< HEAD
     play_human_pmcgs(board)
     test_results(board, turn)
+=======
+    run_tournament = input("Would you like to run the algo tournament (y/n)")
+    if run_tournament == 'y':
+        test_results(board, turn)
+>>>>>>> 87a3453a5036cf4021e5ec2cac391cfe8c0d8df1
 
     if 'UR' in algo:
         uniform_random(board,turn,alternating)
@@ -406,9 +414,9 @@ def main():
 
     if "UCT" in algo:
         if output_type == "verbose":
-            uct(board, turn, True)
+            uct(board, turn, arg, True)
         else:
-            uct(board, turn, False)
+            uct(board, turn, arg, False)
 
     
 
