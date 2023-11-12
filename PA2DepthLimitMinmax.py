@@ -12,13 +12,11 @@ class node():
         self.children = [] # list of nodes 
         self.parent = parent
 
-    def playMove(node,moves):
-        tempboard = node.board
-        player = node.player
-        for move in moves:
-            tempboard[move[0]][move[1]] = node.player
+    def playMove(self, move):
+        tempboard = [row.copy() for row in self.board]  # Create a new copy of the board
+        tempboard[move[0]][move[1]] = self.player  # Apply the move to the new board
         return tempboard
-    
+        
     def getOppositePlayer(self):
         if self.player == 'Y':
             return 'R'
@@ -27,16 +25,15 @@ class node():
     
        #Recursive function to 
     def createPermutations(self):
-        if self.i_depth >= 0:
+        if self.i_depth > 0:
             legal = find_legal_moves(self.board)
             for index in legal:
-                new_board = self.playMove([index])  # Pass a specific move instead of the entire list
-                new_player = self.getOppositePlayer()  # Get the opposite player for the new node
-                self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic,self))
-                #print(f'{self.board} \n')
-            
-            for child in self.children:
-                child.createPermutations()
+                new_board = self.playMove(index)
+                new_player = self.getOppositePlayer()
+                self.children.append(node(self.i_depth - 1, new_board, new_player, self.i_heuristic, self))
+
+        for child in self.children:
+            child.createPermutations()
 
     def getHeuristic(self):
         opponent = 'R' if self.player == 'Y' else 'Y'
@@ -117,7 +114,6 @@ class node():
                 if all(child.i_heuristic == -0 for child in temp.children):
                     temp.i_heuristic = -1
                     print("It's a tie!")
-                    print(f"{temp.board} \n")
                     break  # Exit the loop in case of a tie
 
                 # Continue with the maximum or minimum value based on the player
@@ -226,8 +222,7 @@ def uniform_random(board, turn, alternating):
         chosen_move = random.randint(0,len(moves)-1)
         row = moves[chosen_move][0]
         col = moves[chosen_move][1]
-        board[row][col] = turn
-        return board
+        return (row,col)
     while(checkWin(board) == 'N'):
         moves = find_legal_moves(board)
         chosen_move = random.randint(0,len(moves)-1)
@@ -255,10 +250,10 @@ def print_board(board):
         print(' '.join(row))
     print()
 
-def pmcgs(board, turn, verbose):
+def pmcgs(board, turn, arg, verbose):
     pmcgs_ai = PMCGS(board, turn.strip(), verbose)
     i = 0
-    while i < 100:
+    while i < int(arg):
         if pmcgs_ai.select(pmcgs_ai.root) == -1:
             pmcgs_ai.expand(pmcgs_ai.root)
         
@@ -271,11 +266,12 @@ def pmcgs(board, turn, verbose):
     best_move = pmcgs_ai.choose_best_move()
     pmcgs_ai.print_move_scores()
     print("FINAL Move selected: ", best_move)
+    return best_move
     
-def uct(board, turn, verbose):
+def uct(board, turn, arg, verbose):
     uct_ai = PMCGS(board, turn.strip(), verbose)
     i = 0
-    while i < 100:
+    while i < int(arg):
         if uct_ai.uct_select(uct_ai.root) == -1:
             uct_ai.expand(uct_ai.root)
         
@@ -288,7 +284,50 @@ def uct(board, turn, verbose):
     best_move = uct_ai.choose_best_move()
     uct_ai.print_move_scores()
     print("FINAL Move selected: ", best_move)
-        
+    return best_move
+
+def test_results(board, turn):
+    #testing UR vs PMCGS (500)
+    for i in range(100):
+        ur_wins = 0
+        pmcgs_wins = 0
+        draws = 0
+        while(True):
+            ur_move = uniform_random(board, turn, True) 
+            ur_row = ur_move[0]
+            ur_col = ur_move[1]
+            board[ur_row][ur_col] = turn
+            if board(checkWin) != 'N': 
+                break
+            if turn == 'R':
+                turn = 'Y'
+            elif turn == 'Y':
+                turn = 'R'
+            pmcgs_move = pmcgs(board, turn, 500, False)
+            full_pmcgs_move = find_tree_move(board, pmcgs_move)
+            pmcgs_row = full_pmcgs_move[0]
+            pmcgs_col = full_pmcgs_move[1]
+            board[pmcgs_row][pmcgs_col] = turn
+            if board(checkWin) != 'N': 
+                break
+            if turn == 'R':
+                turn = 'Y'
+            elif turn == 'Y':
+                turn = 'R'
+        if(checkWin(board) == 'R'):
+            ur_wins += 1
+        elif(checkWin(board) == 'Y'):
+            pmcgs_wins += 1
+        else:
+            draws += 1
+
+    
+    def find_tree_move(board, pmcgs_move):
+        moves = find_legal_moves(board)
+        for move in moves:
+            if move[1] == pmcgs_move:
+                return move
+    
 
 def main():
     file_name = sys.argv[1]
@@ -305,9 +344,9 @@ def main():
 
     if "PMCGS" in algo:
         if output_type == "verbose":
-            pmcgs(board, turn, True)
+            pmcgs(board, turn, arg, True)
         else:
-            pmcgs(board, turn, False)
+            pmcgs(board, turn, arg, False)
 
     if "UCT" in algo:
         if output_type == "verbose":
