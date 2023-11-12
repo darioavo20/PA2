@@ -22,6 +22,8 @@ class PMCGS:
         self.turn = turn #turn that updates every move
         self.verbose = verbose
         self.start_turn = turn #this is the player's turn at the start
+
+
     def select(self, node):
         if node.children:
             return random.choice(node.children)
@@ -167,19 +169,27 @@ class PMCGS:
 
     def choose_best_move(self):
         best_move = None
-        best_score = -float('inf')  
+        best_score = -float('inf')
+        best_column = None
 
-       
         for child in self.root.children:
             if child.visits > 0:
-                
-                score = child.wins / child.visits  
-
+                score = child.wins / child.visits
                 if score > best_score:
                     best_score = score
-                    best_move = self.get_move_from_state(self.root.state, child.state)
+                    best_column = self.get_move_from_state(self.root.state, child.state)
+        
+        if best_column is not None:
+            best_row = self.find_lowest_available_row(self.root.state, best_column)
+            best_move = (best_row, best_column)
+    
+        return best_move
 
-        return best_move + 1
+    def find_lowest_available_row(self, board, column):
+        for row in range(len(board) - 1, -1, -1):  
+            if board[row][column] == 'O':  
+                return row
+        return None
 
     def get_move_from_state(self, parent_state, child_state):
         for i in range(len(parent_state)):
