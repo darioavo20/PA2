@@ -12,13 +12,11 @@ class node():
         self.children = [] # list of nodes 
         self.parent = parent
 
-    def playMove(node,moves):
-        tempboard = node.board
-        player = node.player
-        for move in moves:
-            tempboard[move[0]][move[1]] = node.player
+    def playMove(self, move):
+        tempboard = [row.copy() for row in self.board]  # Create a new copy of the board
+        tempboard[move[0]][move[1]] = self.player  # Apply the move to the new board
         return tempboard
-    
+        
     def getOppositePlayer(self):
         if self.player == 'Y':
             return 'R'
@@ -27,16 +25,15 @@ class node():
     
        #Recursive function to 
     def createPermutations(self):
-        if self.i_depth >= 0:
+        if self.i_depth > 0:
             legal = find_legal_moves(self.board)
             for index in legal:
-                new_board = self.playMove([index])  # Pass a specific move instead of the entire list
-                new_player = self.getOppositePlayer()  # Get the opposite player for the new node
-                self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic,self))
-                #print(f'{self.board} \n')
-            
-            for child in self.children:
-                child.createPermutations()
+                new_board = self.playMove(index)
+                new_player = self.getOppositePlayer()
+                self.children.append(node(self.i_depth - 1, new_board, new_player, self.i_heuristic, self))
+
+        for child in self.children:
+            child.createPermutations()
 
     def getHeuristic(self):
         opponent = 'R' if self.player == 'Y' else 'Y'
@@ -117,7 +114,6 @@ class node():
                 if all(child.i_heuristic == -0 for child in temp.children):
                     temp.i_heuristic = -1
                     print("It's a tie!")
-                    print(f"{temp.board} \n")
                     break  # Exit the loop in case of a tie
 
                 # Continue with the maximum or minimum value based on the player
