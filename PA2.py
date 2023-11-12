@@ -12,11 +12,13 @@ class node():
         self.children = [] # list of nodes 
         self.parent = parent
 
-    def playMove(self, move):
-        tempboard = [row.copy() for row in self.board]  # Create a new copy of the board
-        tempboard[move[0]][move[1]] = self.player  # Apply the move to the new board
+    def playMove(node,moves):
+        tempboard = node.board
+        player = node.player
+        for move in moves:
+            tempboard[move[0]][move[1]] = node.player
         return tempboard
-        
+    
     def getOppositePlayer(self):
         if self.player == 'Y':
             return 'R'
@@ -25,15 +27,16 @@ class node():
     
        #Recursive function to 
     def createPermutations(self):
-        if self.i_depth > 0:
+        if self.i_depth >= 0:
             legal = find_legal_moves(self.board)
             for index in legal:
-                new_board = self.playMove(index)
-                new_player = self.getOppositePlayer()
-                self.children.append(node(self.i_depth - 1, new_board, new_player, self.i_heuristic, self))
-
-        for child in self.children:
-            child.createPermutations()
+                new_board = self.playMove([index])  # Pass a specific move instead of the entire list
+                new_player = self.getOppositePlayer()  # Get the opposite player for the new node
+                self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic,self))
+                #print(f'{self.board} \n')
+            
+            for child in self.children:
+                child.createPermutations()
 
     def getHeuristic(self):
         opponent = 'R' if self.player == 'Y' else 'Y'
@@ -114,6 +117,7 @@ class node():
                 if all(child.i_heuristic == -0 for child in temp.children):
                     temp.i_heuristic = -1
                     print("It's a tie!")
+                    print(f"{temp.board} \n")
                     break  # Exit the loop in case of a tie
 
                 # Continue with the maximum or minimum value based on the player
@@ -334,20 +338,47 @@ def test_results(board, turn):
         else:
             ur_pmcgs500_draws += 1
         board = empty_board
+    
     print('UR wins', ur_pmcgs500_wins)
     print("UR win%:", ur_pmcgs500_wins/100)
     print("PMCGS500 wins", ur_pmcgs500_losses)
     print("PMCGS500 win%:", ur_pmcgs500_losses/100)
     print("UR vs PMCGS500 draws:", ur_pmcgs500_draws)
-    
 
-    
+# helper method to deal with pmcgs and uct return type    
 def find_tree_move(board, pmcgs_move):
     moves = find_legal_moves(board)
     for move in moves:
         if move[1] == pmcgs_move:
             return move
     
+# method to play with human player
+def play_human_pmcgs(board):
+    while(True):
+        print('Play one of the following legal moves')
+        moves = find_legal_moves(board)
+        print(moves)
+        user_row = input("Enter row: ")
+        user_col = input("Enter col: ")
+        board[int(user_row)][int(user_col)] = 'R'
+        print(board)
+        if checkWin(board) != 'N': 
+            break
+        pmcgs_move = pmcgs(board, 'Y', 10000, False)
+        full_pmcgs_move = find_tree_move(board, pmcgs_move-1)
+        pmcgs_row = full_pmcgs_move[0]
+        pmcgs_col = full_pmcgs_move[1]
+        board[pmcgs_row][pmcgs_col] = 'Y'
+        print(board)
+        if checkWin(board) != 'N': 
+            break
+    if checkWin(board) == 'R':
+        print("You won!")
+    elif checkWin(board) == 'Y':
+        print("You lost!")
+    else:
+        print("This was a draw")
+
 
 def main():
     file_name = sys.argv[1]
@@ -355,6 +386,7 @@ def main():
     #preset by programmer for testing purposes
     alternating = False
     algo, arg, turn, board = file_reader(file_name)
+    play_human_pmcgs(board)
     test_results(board, turn)
 
     if 'UR' in algo:
