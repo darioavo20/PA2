@@ -140,6 +140,7 @@ def file_reader(file_name):
             lines = file.readlines()
             remaining = lines[3:]
             algo = lines[0]
+            print(algo)
             arg = lines[1]
             turn = lines[2]
             for row, line in enumerate(remaining):
@@ -263,7 +264,7 @@ def pmcgs(board, turn, arg, verbose):
         selection = pmcgs_ai.select(pmcgs_ai.root)
         result = pmcgs_ai.simulate(selection)
         pmcgs_ai.backprop(selection, result)
-        print("_____________________________________________________")
+        #print("_____________________________________________________")
         i += 1
     
     best_move = pmcgs_ai.choose_best_move()
@@ -290,46 +291,65 @@ def uct(board, turn, arg, verbose):
     return best_move
 
 def test_results(board, turn):
+    empty_board = board
+    if 'R' in turn:
+        turn = 'R'
+    if 'Y' in turn:
+        turn = 'Y'
+
     #testing UR vs PMCGS (500)
+    ur_pmcgs500_wins = 0
+    ur_pmcgs500_losses = 0
+    ur_pmcgs500_draws = 0
     for i in range(100):
-        ur_wins = 0
-        pmcgs_wins = 0
-        draws = 0
         while(True):
-            ur_move = uniform_random(board, turn, True) 
+            ur_move = uniform_random(board, turn, True)
             ur_row = ur_move[0]
             ur_col = ur_move[1]
             board[ur_row][ur_col] = turn
-            if board(checkWin) != 'N': 
+            print(board)
+            print(turn)
+            print(checkWin(board))
+            if checkWin(board) != 'N': 
                 break
             if turn == 'R':
                 turn = 'Y'
             elif turn == 'Y':
                 turn = 'R'
             pmcgs_move = pmcgs(board, turn, 500, False)
-            full_pmcgs_move = find_tree_move(board, pmcgs_move)
+            full_pmcgs_move = find_tree_move(board, pmcgs_move-1)
             pmcgs_row = full_pmcgs_move[0]
             pmcgs_col = full_pmcgs_move[1]
             board[pmcgs_row][pmcgs_col] = turn
-            if board(checkWin) != 'N': 
+            print(board)
+            print(turn)
+            print(checkWin(board))
+            if checkWin(board) != 'N': 
                 break
             if turn == 'R':
                 turn = 'Y'
             elif turn == 'Y':
                 turn = 'R'
         if(checkWin(board) == 'R'):
-            ur_wins += 1
+            ur_pmcgs500_wins += 1
         elif(checkWin(board) == 'Y'):
-            pmcgs_wins += 1
+            ur_pmcgs500_losses += 1
         else:
-            draws += 1
+            ur_pmcgs500_draws += 1
+        board = empty_board
+    print('UR wins', ur_pmcgs500_wins)
+    print("UR win%:", ur_pmcgs500_wins/100)
+    print("PMCGS500 wins", ur_pmcgs500_losses)
+    print("PMCGS500 win%:", ur_pmcgs500_losses/100)
+    print("UR vs PMCGS500 draws:", ur_pmcgs500_draws)
+    
 
     
-    def find_tree_move(board, pmcgs_move):
-        moves = find_legal_moves(board)
-        for move in moves:
-            if move[1] == pmcgs_move:
-                return move
+def find_tree_move(board, pmcgs_move):
+    moves = find_legal_moves(board)
+    for move in moves:
+        if move[1] == pmcgs_move:
+            return move
     
 
 def main():
@@ -338,6 +358,10 @@ def main():
     #preset by programmer for testing purposes
     alternating = False
     algo, arg, turn, board = file_reader(file_name)
+    test_results(board, turn)
+
+    if 'UR' in algo:
+        uniform_random(board,turn,alternating)
 
     if 'DLMM' in algo:
         root = node(int(arg),board,turn,0)
@@ -357,8 +381,7 @@ def main():
         else:
             uct(board, turn, False)
 
-    if 'UR' in algo:
-        uniform_random(board,turn,alternating)
+    
 
 if __name__ == "__main__":
     main()
