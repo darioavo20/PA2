@@ -388,14 +388,11 @@ def main():
     #preset by programmer for testing purposes
     alternating = False
     algo, arg, turn, board = file_reader(file_name)
-<<<<<<< HEAD
     play_human_pmcgs(board)
     test_results(board, turn)
-=======
     run_tournament = input("Would you like to run the algo tournament (y/n)")
     if run_tournament == 'y':
         test_results(board, turn)
->>>>>>> 87a3453a5036cf4021e5ec2cac391cfe8c0d8df1
 
     if 'UR' in algo:
         uniform_random(board,turn,alternating)
