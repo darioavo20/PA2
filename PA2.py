@@ -114,9 +114,10 @@ class node():
                     print(f"column{count}: {child.i_heuristic} \n")
 
                 # Check for a tie
-                if all(child.i_heuristic == -1 for child in temp.children):
+                if all(child.i_heuristic == -0 for child in temp.children):
                     temp.i_heuristic = -1
                     print("It's a tie!")
+                    print(f"{temp.board} \n")
                     break  # Exit the loop in case of a tie
 
                 # Continue with the maximum or minimum value based on the player
