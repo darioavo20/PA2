@@ -139,7 +139,7 @@ def file_reader(file_name):
             lines = file.readlines()
             remaining = lines[3:]
             algo = lines[0]
-            print(algo)
+            #print(algo)
             arg = lines[1]
             turn = lines[2]
             for row, line in enumerate(remaining):
@@ -148,7 +148,7 @@ def file_reader(file_name):
                         break
                     board[row][column] = char
 
-        print(f'starting Board:\n {board} \n')
+        #print(f'starting Board:\n {board} \n')
         return algo, arg, turn, board
             
     except Exception as e:
@@ -233,7 +233,7 @@ def uniform_random(board, turn, alternating):
         col = moves[chosen_move][1]
         board[row][col] = turn
         print(board)
-        print('Move selected',col)
+        print('Move selected',col+1)
         if turn == 'R':
             print("Yellow turn now")
             turn = 'Y'
@@ -263,7 +263,6 @@ def pmcgs(board, turn, arg, verbose):
         selection = pmcgs_ai.select(pmcgs_ai.root)
         result = pmcgs_ai.simulate(selection)
         pmcgs_ai.backprop(selection, result)
-        #print("_____________________________________________________")
         i += 1
     
     best_move = pmcgs_ai.choose_best_move()
@@ -281,7 +280,6 @@ def uct(board, turn, arg, verbose):
         selection = uct_ai.uct_select(uct_ai.root)
         result = uct_ai.simulate(selection)
         uct_ai.backprop(selection, result)
-        print("_____________________________________________________")
         i += 1
     
     best_move = uct_ai.choose_best_move()
@@ -398,6 +396,8 @@ def ur_vs_pmcgs(board, turn):
             ur_pmcgs500_losses += 1
         else:
             ur_pmcgs500_draws += 1
+        board = empty_board
+    
         board = deepcopy(empty_board)
     print('UR wins', ur_pmcgs500_wins)
     print("UR win%:", ur_pmcgs500_wins/100)
@@ -413,6 +413,61 @@ def find_tree_move(board, pmcgs_move):
         if move[1] == pmcgs_move:
             return move
     
+# method to play with human player
+def play_human_pmcgs(board):
+    print(board)
+    while(True):
+        print('Play one of the following legal moves')
+        moves = find_legal_moves(board)
+        print(moves)
+        user_row = input("Enter row: ")
+        user_col = input("Enter col: ")
+        board[int(user_row)][int(user_col)] = 'R'
+        print(board)
+        if checkWin(board) != 'N': 
+            break
+        pmcgs_move = pmcgs(board, 'Y', 10000, False)
+        full_pmcgs_move = find_tree_move(board, pmcgs_move-1)
+        pmcgs_row = full_pmcgs_move[0]
+        pmcgs_col = full_pmcgs_move[1]
+        board[pmcgs_row][pmcgs_col] = 'Y'
+        print(board)
+        if checkWin(board) != 'N': 
+            break
+    if checkWin(board) == 'R':
+        print("You won!")
+    elif checkWin(board) == 'Y':
+        print("You lost!")
+    else:
+        print("This was a draw")
+
+def play_human_uct(board):
+    print(board)
+    while(True):
+        print('Play one of the following legal moves')
+        moves = find_legal_moves(board)
+        print(moves)
+        user_row = input("Enter row: ")
+        user_col = input("Enter col: ")
+        board[int(user_row)][int(user_col)] = 'R'
+        print(board)
+        if checkWin(board) != 'N': 
+            break
+        uct_move = uct(board, 'Y', 10000, False)
+        full_uct_move = find_tree_move(board, uct_move-1)
+        uct_row = full_uct_move[0]
+        uct_col = full_uct_move[1]
+        board[uct_row][uct_col] = 'Y'
+        print(board)
+        if checkWin(board) != 'N': 
+            break
+    if checkWin(board) == 'R':
+        print("You won!")
+    elif checkWin(board) == 'Y':
+        print("You lost!")
+    else:
+        print("This was a draw")
+
 
 def main():
     file_name = sys.argv[1]
@@ -420,6 +475,13 @@ def main():
     #preset by programmer for testing purposes
     alternating = False
     algo, arg, turn, board = file_reader(file_name)
+    play_human = input("Would you like to play against an algorithm? (Input then number associated with the desired option) \n 1. PMCGS 10000 \n 2. UCT 10000 \n 3. No \n")
+    if play_human == "1":
+        play_human_pmcgs(board)
+        sys.exit()
+    if play_human == "2":
+        play_human_uct(board)
+        sys.exit()
     run_tournament = input("Would you like to run the algo tournament (y/n)")
     if run_tournament == 'y':
         test_results()
