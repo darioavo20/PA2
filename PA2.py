@@ -58,81 +58,74 @@ class node():
     def count_consecutive_total(self):
         count = 0
 
-        # Check horizontally
+    # Check horizontally
         for row in self.board:
-            count += self.count_consecutive(row)
+            count += self.score_consecutive(row)
 
         # Check vertically
         for col in range(len(self.board[0])):
             column = [self.board[row][col] for row in range(len(self.board))]
-            count += self.count_consecutive(column)
+            count += self.score_consecutive(column)
 
         # Check diagonally (top-left to bottom-right)
         for row in range(len(self.board) - 1):
             for col in range(len(self.board[0]) - 1):
                 diagonal = [self.board[row + i][col + i] for i in range(min(len(self.board) - row, len(self.board[0]) - col))]
-                count += self.count_consecutive(diagonal)
+                count += self.score_consecutive(diagonal)
 
         # Check diagonally (top-right to bottom-left)
         for row in range(len(self.board) - 1):
             for col in range(1, len(self.board[0])):
                 diagonal = [self.board[row + i][col - i] for i in range(min(len(self.board) - row, col + 1))]
-                count += self.count_consecutive(diagonal)
+                count += self.score_consecutive(diagonal)
 
         return count
 
-    def count_consecutive(self, line):
-        count = 0
+    def score_consecutive(self, line):
         current_player = self.player
+        opponent = 1 if current_player == -1 else -1  # Assuming player values are -1 and 1
+        score = 0
         consecutive_count = 0
 
         for cell in line:
             if cell == current_player:
                 consecutive_count += 1
+            elif cell == opponent:
+                consecutive_count = 0
             else:
                 consecutive_count = 0
 
             if consecutive_count >= 4:
-                count += 1
+                score += 1
 
-        return count
+        return score
 
 
-    def backprop(self, arg):
+
+    def backprop(self):
         temp = self
         testcheck = 0
 
-        # Traverse the tree to find the leaf node
-        while temp.children:
-            temp = temp.children[0]
+       
+        for child in temp.children:
+            child.backprop()
 
-        # Perform backpropagation to update the values of parent nodes
-        while temp.parent:
-            temp.i_heuristic = temp.getHeuristic()
+        if not temp.children:
+            temp.i_heuristic = temp.getHeuristic() # this node is a leaf 
+            return
+        
+        dicionary = {}
+        for count, child in enumerate(temp.children):
+            dicionary[count] = child.i_heuristic
+            print(f"column: {count}: {child.i_heuristic} \n")
 
-            # Check if there are children before finding the maximum value
-            if temp.children:
-                dicionary = {}
-                for count, child in enumerate(temp.children):
-                    dicionary[count] = child.i_heuristic
-                    print(f"column: {count}: {child.i_heuristic} \n")
+        if temp.parent:
+            temp.i_heuristic = max(dicionary.values()) if temp.parent.player == 'Y'else min(dicionary.values())    
+            for key, value in dicionary.items():
+                if value == temp.i_heuristic:
+                    print(f"Testing Move Selected: {key}")
+        
 
-                # Check for a tie
-                if all(child.i_heuristic == -0 for child in temp.children):
-                    temp.i_heuristic = -1
-                    print("It's a tie!")
-                    print(f"{print_board(temp.board)} \n")
-                    break  # Exit the loop in case of a tie
-
-                # Continue with the maximum or minimum value based on the player
-                if temp.parent.player == "Y":
-                    temp.i_heuristic = max(child.i_heuristic for child in temp.children)
-                    print(f"Move Selected: {dicionary[temp.i_heuristic]}")
-                else:
-                    temp.i_heuristic = min(child.i_heuristic for child in temp.children)
-                    print(f"Move Selected: {dicionary[temp.i_heuristic]}")
-
-            temp = temp.parent
 # Function to read in test case
 def file_reader(file_name):
     try:
@@ -431,7 +424,7 @@ def main():
         root = node(int(arg),board,turn,0)
         legal = find_legal_moves(root.board)
         root.createPermutations()
-        root.backprop(arg)
+        root.backprop()
 
     if "PMCGS" in algo:
         if output_type == "verbose":
