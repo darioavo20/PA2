@@ -33,7 +33,7 @@ class node():
             for index in legal:
                 new_board = self.playMove(index)  # Pass a specific move instead of the entire list
                 new_player = self.getOppositePlayer()  # Get the opposite player for the new node
-                print(f"{print_board(new_board)} \n")
+                #print(f"{print_board(new_board)} \n")
                 self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic,self))
                 #print(f'{self.board} \n')
             
@@ -44,16 +44,30 @@ class node():
         opponent = 'R' if self.player == 'Y' else 'Y'
 
         winner = checkWin(self.board)
-        if winner == "red":
+        #print(f"Current Board:\n{print_board(self.board)}")
+        print(f"Winner: {winner}")
+
+        if winner == 'R':
             print("Red wins")
-            return float('inf')  # Assign a high value for winning state
-        elif winner == "yellow":
+            return 2.0  # Assign a high value for winning state
+        elif winner == 'Y':
             print("Yellow wins")
-            return -float('inf')  # Assign a low value for losing state
+            return -2.0  # Assign a low value for losing state
         elif all(cell != 'O' for row in self.board for cell in row):
-            return 0  # Assign a value for a draw
+            print("It's a draw")
+            return 0.0  # Assign a value for a draw
         else:
-            return self.count_consecutive_total()
+            # Calculate the new heuristic values
+            consecutive_total = self.count_consecutive_total()
+            open_ended_total = self.open_ended_consecutive_count()
+
+            # Normalize the values to be between -1 and 1
+            max_value = max(consecutive_total, open_ended_total)
+            normalized_consecutive = consecutive_total / max_value if max_value != 0 else 0.0
+            normalized_open_ended = open_ended_total / max_value if max_value != 0 else 0.0
+
+            # Combine the normalized values with weights
+            return normalized_consecutive + 0.5 * normalized_open_ended
         
     def count_consecutive_total(self):
         count = 0
@@ -99,7 +113,51 @@ class node():
                 score += 1
 
         return score
+    
+    def open_ended_consecutive_count(self):
+        count = 0
 
+        # Check horizontally
+        for row in self.board:
+            count += self.count_open_ended_consecutive(row)
+
+        # Check vertically
+        for col in range(len(self.board[0])):
+            column = [self.board[row][col] for row in range(len(self.board))]
+            count += self.count_open_ended_consecutive(column)
+
+        # Check diagonally (top-left to bottom-right)
+        for row in range(len(self.board) - 1):
+            for col in range(len(self.board[0]) - 1):
+                diagonal = [self.board[row + i][col + i] for i in range(min(len(self.board) - row, len(self.board[0]) - col))]
+                count += self.count_open_ended_consecutive(diagonal)
+
+        # Check diagonally (top-right to bottom-left)
+        for row in range(len(self.board) - 1):
+            for col in range(1, len(self.board[0])):
+                diagonal = [self.board[row + i][col - i] for i in range(min(len(self.board) - row, col + 1))]
+                count += self.count_open_ended_consecutive(diagonal)
+
+        return count
+
+    def count_open_ended_consecutive(self, line):
+        current_player = self.player
+        opponent = 1 if current_player == -1 else -1  # Assuming player values are -1 and 1
+        consecutive_count = 0
+
+        for i, cell in enumerate(line):
+            if cell == current_player:
+                consecutive_count += 1
+            elif cell == opponent:
+                consecutive_count = 0
+            else:
+                # Check if the sequence has at least one open end
+                if i - consecutive_count > 0 and i < len(line) - 1 and line[i - consecutive_count - 1] == 0 and line[i + 1] == 0:
+                    consecutive_count += 1
+                else:
+                    consecutive_count = 0
+
+        return consecutive_count
 
 
     def backprop(self):
