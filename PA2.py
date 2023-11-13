@@ -49,13 +49,13 @@ class node():
 
         if winner == 'R':
             print("Red wins")
-            return 2.0  # Assign a high value for winning state
+            return 'R'  # Assign a high value for winning state
         elif winner == 'Y':
             print("Yellow wins")
-            return -2.0  # Assign a low value for losing state
+            return 'Y'  # Assign a low value for losing state
         elif all(cell != 'O' for row in self.board for cell in row):
             print("It's a draw")
-            return 0.0  # Assign a value for a draw
+            return 'N'  # Assign a value for a draw
         else:
             # Calculate the new heuristic values
             consecutive_total = self.count_consecutive_total()
@@ -162,7 +162,6 @@ class node():
 
     def backprop(self):
         temp = self
-        testcheck = 0
 
        
         for child in temp.children:
@@ -177,11 +176,21 @@ class node():
             dicionary[count] = child.i_heuristic
             print(f"column: {count}: {child.i_heuristic} \n")
 
+        if temp.i_heuristic == 'R':
+            return
+        if temp.i_heuristic == 'Y':
+            return
+        if temp.i_heuristic == 'N':
+            return
+        
+
         if temp.parent:
-            temp.i_heuristic = max(dicionary.values()) if temp.parent.player == 'Y'else min(dicionary.values())    
+            temp.i_heuristic = max(dicionary.values()) if temp.parent.player == 'Y'else min(dicionary.values())
+            #alpha > Beta prunne     
             for key, value in dicionary.items():
                 if value == temp.i_heuristic:
                     print(f"Testing Move Selected: {key}")
+                    break
         
 
 # Function to read in test case
