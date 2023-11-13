@@ -18,7 +18,8 @@ class node():
         tempboard = [row.copy() for row in self.board]  # Create a new copy of the board
         tempboard[move[0]][move[1]] = self.player  # Apply the move to the new board
         return tempboard
-        
+
+    
     def getOppositePlayer(self):
         if self.player == 'Y':
             return 'R'
@@ -30,103 +31,159 @@ class node():
         if self.i_depth > 0:
             legal = find_legal_moves(self.board)
             for index in legal:
-                new_board = self.playMove(index)
-                new_player = self.getOppositePlayer()
-                self.children.append(node(self.i_depth - 1, new_board, new_player, self.i_heuristic, self))
-
-        for child in self.children:
-            child.createPermutations()
+                new_board = self.playMove(index)  # Pass a specific move instead of the entire list
+                new_player = self.getOppositePlayer()  # Get the opposite player for the new node
+                #print(f"{print_board(new_board)} \n")
+                self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic,self))
+                #print(f'{self.board} \n')
+            
+            for child in self.children:
+                child.createPermutations()
 
     def getHeuristic(self):
         opponent = 'R' if self.player == 'Y' else 'Y'
 
         winner = checkWin(self.board)
-        if winner == "red":
+        #print(f"Current Board:\n{print_board(self.board)}")
+        print(f"Winner: {winner}")
+
+        if winner == 'R':
             print("Red wins")
-            return float('inf')  # Assign a high value for winning state
-        elif winner == "yellow":
+            return 2.0  # Assign a high value for winning state
+        elif winner == 'Y':
             print("Yellow wins")
-            return -float('inf')  # Assign a low value for losing state
+            return -2.0  # Assign a low value for losing state
         elif all(cell != 'O' for row in self.board for cell in row):
-            return 0  # Assign a value for a draw
+            print("It's a draw")
+            return 0.0  # Assign a value for a draw
         else:
-            return self.count_consecutive_total()
+            # Calculate the new heuristic values
+            consecutive_total = self.count_consecutive_total()
+            open_ended_total = self.open_ended_consecutive_count()
+
+            # Normalize the values to be between -1 and 1
+            max_value = max(consecutive_total, open_ended_total)
+            normalized_consecutive = consecutive_total / max_value if max_value != 0 else 0.0
+            normalized_open_ended = open_ended_total / max_value if max_value != 0 else 0.0
+
+            # Combine the normalized values with weights
+            return normalized_consecutive + 0.5 * normalized_open_ended
         
     def count_consecutive_total(self):
         count = 0
 
-        # Check horizontally
+    # Check horizontally
         for row in self.board:
-            count += self.count_consecutive(row)
+            count += self.score_consecutive(row)
 
         # Check vertically
         for col in range(len(self.board[0])):
             column = [self.board[row][col] for row in range(len(self.board))]
-            count += self.count_consecutive(column)
+            count += self.score_consecutive(column)
 
         # Check diagonally (top-left to bottom-right)
         for row in range(len(self.board) - 1):
             for col in range(len(self.board[0]) - 1):
                 diagonal = [self.board[row + i][col + i] for i in range(min(len(self.board) - row, len(self.board[0]) - col))]
-                count += self.count_consecutive(diagonal)
+                count += self.score_consecutive(diagonal)
 
         # Check diagonally (top-right to bottom-left)
         for row in range(len(self.board) - 1):
             for col in range(1, len(self.board[0])):
                 diagonal = [self.board[row + i][col - i] for i in range(min(len(self.board) - row, col + 1))]
-                count += self.count_consecutive(diagonal)
+                count += self.score_consecutive(diagonal)
 
         return count
 
-    def count_consecutive(self, line):
-        count = 0
+    def score_consecutive(self, line):
         current_player = self.player
+        opponent = 1 if current_player == -1 else -1  # Assuming player values are -1 and 1
+        score = 0
         consecutive_count = 0
 
         for cell in line:
             if cell == current_player:
                 consecutive_count += 1
+            elif cell == opponent:
+                consecutive_count = 0
             else:
                 consecutive_count = 0
 
             if consecutive_count >= 4:
-                count += 1
+                score += 1
+
+        return score
+    
+    def open_ended_consecutive_count(self):
+        count = 0
+
+        # Check horizontally
+        for row in self.board:
+            count += self.count_open_ended_consecutive(row)
+
+        # Check vertically
+        for col in range(len(self.board[0])):
+            column = [self.board[row][col] for row in range(len(self.board))]
+            count += self.count_open_ended_consecutive(column)
+
+        # Check diagonally (top-left to bottom-right)
+        for row in range(len(self.board) - 1):
+            for col in range(len(self.board[0]) - 1):
+                diagonal = [self.board[row + i][col + i] for i in range(min(len(self.board) - row, len(self.board[0]) - col))]
+                count += self.count_open_ended_consecutive(diagonal)
+
+        # Check diagonally (top-right to bottom-left)
+        for row in range(len(self.board) - 1):
+            for col in range(1, len(self.board[0])):
+                diagonal = [self.board[row + i][col - i] for i in range(min(len(self.board) - row, col + 1))]
+                count += self.count_open_ended_consecutive(diagonal)
 
         return count
 
+    def count_open_ended_consecutive(self, line):
+        current_player = self.player
+        opponent = 1 if current_player == -1 else -1  # Assuming player values are -1 and 1
+        consecutive_count = 0
 
-    def backprop(self, arg):
+        for i, cell in enumerate(line):
+            if cell == current_player:
+                consecutive_count += 1
+            elif cell == opponent:
+                consecutive_count = 0
+            else:
+                # Check if the sequence has at least one open end
+                if i - consecutive_count > 0 and i < len(line) - 1 and line[i - consecutive_count - 1] == 0 and line[i + 1] == 0:
+                    consecutive_count += 1
+                else:
+                    consecutive_count = 0
+
+        return consecutive_count
+
+
+    def backprop(self):
         temp = self
         testcheck = 0
 
-        # Traverse the tree to find the leaf node
-        while temp.children:
-            temp = temp.children[0]
+       
+        for child in temp.children:
+            child.backprop()
 
-        # Perform backpropagation to update the values of parent nodes
-        while temp.parent:
-            temp.i_heuristic = temp.getHeuristic()
+        if not temp.children:
+            temp.i_heuristic = temp.getHeuristic() # this node is a leaf 
+            return
+        
+        dicionary = {}
+        for count, child in enumerate(temp.children):
+            dicionary[count] = child.i_heuristic
+            print(f"column: {count}: {child.i_heuristic} \n")
 
-            # Check if there are children before finding the maximum value
-            if temp.children:
-                for count, child in enumerate(temp.children):
-                    print(f"column{count}: {child.i_heuristic} \n")
+        if temp.parent:
+            temp.i_heuristic = max(dicionary.values()) if temp.parent.player == 'Y'else min(dicionary.values())    
+            for key, value in dicionary.items():
+                if value == temp.i_heuristic:
+                    print(f"Testing Move Selected: {key}")
+        
 
-                # Check for a tie
-                if all(child.i_heuristic == -0 for child in temp.children):
-                    temp.i_heuristic = -1
-                    print("It's a tie!")
-                    break  # Exit the loop in case of a tie
-
-                # Continue with the maximum or minimum value based on the player
-                if temp.parent.player == "Y":
-                    temp.i_heuristic = max(child.i_heuristic for child in temp.children)
-                    print(f"Move Selected: {temp.i_heuristic}")
-                else:
-                    temp.i_heuristic = min(child.i_heuristic for child in temp.children)
-                    print(f"Move Selected: {temp.i_heuristic}")
-
-            temp = temp.parent
 # Function to read in test case
 def file_reader(file_name):
     try:
@@ -488,7 +545,7 @@ def main():
         root = node(int(arg),board,turn,0)
         legal = find_legal_moves(root.board)
         root.createPermutations()
-        root.backprop(arg)
+        root.backprop()
 
     if "PMCGS" in algo:
         if output_type == "verbose":
