@@ -232,29 +232,23 @@ def uniform_random(board, turn, alternating):
         row = moves[chosen_move][0]
         col = moves[chosen_move][1]
         board[row][col] = turn
-        print(board)
-        print('Move selected',col+1)
+        
+        
         if turn == 'R':
-            print("Yellow turn now")
+           
             turn = 'Y'
         elif turn == 'Y':
-            print("Red turn now")
+            
             turn = 'R'
     
-    if checkWin(board) == 'Y':
-        print("yellow wins")
-    elif checkWin(board) == 'R':
-        print("red wins")
-    else:
-        print("draw") 
 
 def print_board(board):
     for row in board:
         print(' '.join(row))
     print()
 
-def pmcgs(board, turn, arg, verbose):
-    pmcgs_ai = PMCGS(board, turn.strip(), verbose)
+def pmcgs(board, turn, arg):
+    pmcgs_ai = PMCGS(board, turn.strip())
     i = 0
     while i < int(arg):
         if pmcgs_ai.select(pmcgs_ai.root) == -1:
@@ -270,8 +264,8 @@ def pmcgs(board, turn, arg, verbose):
     print("FINAL Move selected: ", best_move)
     return best_move
     
-def uct(board, turn, arg, verbose):
-    uct_ai = PMCGS(board, turn.strip(), verbose)
+def uct(board, turn, arg):
+    uct_ai = PMCGS(board, turn.strip())
     i = 0
     while i < int(arg):
         if uct_ai.uct_select(uct_ai.root) == -1:
@@ -299,38 +293,39 @@ def find_lowest_available_row(board, column):
 
 def test_results():
     algorithms = [
-        {"name": "UR", "function": uniform_random, "param": None},
+        {"name": "UR", "function": uniform_random, "param": True},
         {"name": "PMCGS_500", "function": pmcgs, "param": 500},
         {"name": "PMCGS_10000", "function": pmcgs, "param": 10000},
         {"name": "UCT_500", "function": uct, "param": 500},
         {"name": "UCT_10000", "function": uct, "param": 10000}
     ]
 
-    # Initialize results storage
+   
     results = {alg['name']: {other_alg['name']: {"wins": 0, "losses": 0, "draws": 0} for other_alg in algorithms} for alg in algorithms}
 
-    # Run each pairing for 100 games
     for i, alg1 in enumerate(algorithms):
         for alg2 in algorithms[i+1:]:
             for game in range(100):
                 print("new Game")
-                # Initialize board and starting turn
-                board = create_initial_board()  # Implement this function
-                turn = 'R'  # Starting turn
+               
+                board = create_initial_board() 
+                turn = 'R'  
 
-                # Play the game
+              
                 while True:
                     if turn == 'R':
                         move = alg1['function'](board, turn, alg1['param'])
                     else:
                         move = alg2['function'](board, turn, alg2['param'])
                     
-                    # Update board with the move
+                    print(move)
                     board[move[0]][move[1]] = turn
                     
-                    # Check game status
-                    status = checkWin(board)
+                    
+                   
+                    status = checkWin(board).strip()
                     if status != 'N':
+                        
                         if status == 'R':
                             results[alg1['name']][alg2['name']]['wins'] += 1
                             results[alg2['name']][alg1['name']]['losses'] += 1
@@ -342,11 +337,11 @@ def test_results():
                             results[alg2['name']][alg1['name']]['draws'] += 1
                         break
                     
-                    # Switch turn
+                   
                     turn = 'Y' if turn == 'R' else 'R'
                 
 
-    # Print results
+   
     for alg1 in algorithms:
         for alg2 in algorithms:
             if alg1 != alg2:
@@ -497,15 +492,15 @@ def main():
 
     if "PMCGS" in algo:
         if output_type == "verbose":
-            pmcgs(board, turn, arg, True)
+            pmcgs(board, turn, arg)
         else:
-            pmcgs(board, turn, arg, False)
+            pmcgs(board, turn, arg)
 
     if "UCT" in algo:
         if output_type == "verbose":
-            uct(board, turn, arg, True)
+            uct(board, turn, arg)
         else:
-            uct(board, turn, arg, False)
+            uct(board, turn, arg)
 
     
 

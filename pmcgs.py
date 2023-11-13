@@ -17,10 +17,10 @@ class Node:
 
     
 class PMCGS:
-    def __init__(self, root_state, turn, verbose = False):
+    def __init__(self, root_state, turn):
         self.root = Node(root_state)
         self.turn = turn #turn that updates every move
-        self.verbose = verbose
+        self.verbose = False
         self.start_turn = turn #this is the player's turn at the start
 
 
