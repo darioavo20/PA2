@@ -14,12 +14,11 @@ class node():
         self.children = [] # list of nodes 
         self.parent = parent
 
-    def playMove(node,moves):
-        tempboard = node.board
-        player = node.player
-        for move in moves:
-            tempboard[move[0]][move[1]] = node.player
+    def playMove(self, move):
+        tempboard = [row.copy() for row in self.board]  # Create a new copy of the board
+        tempboard[move[0]][move[1]] = self.player  # Apply the move to the new board
         return tempboard
+
     
     def getOppositePlayer(self):
         if self.player == 'Y':
@@ -32,8 +31,9 @@ class node():
         if self.i_depth >= 0:
             legal = find_legal_moves(self.board)
             for index in legal:
-                new_board = self.playMove([index])  # Pass a specific move instead of the entire list
+                new_board = self.playMove(index)  # Pass a specific move instead of the entire list
                 new_player = self.getOppositePlayer()  # Get the opposite player for the new node
+                print(f"{print_board(new_board)} \n")
                 self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic,self))
                 #print(f'{self.board} \n')
             
@@ -112,23 +112,25 @@ class node():
 
             # Check if there are children before finding the maximum value
             if temp.children:
+                dicionary = {}
                 for count, child in enumerate(temp.children):
-                    print(f"column{count}: {child.i_heuristic} \n")
+                    dicionary[count] = child.i_heuristic
+                    print(f"column: {count}: {child.i_heuristic} \n")
 
                 # Check for a tie
                 if all(child.i_heuristic == -0 for child in temp.children):
                     temp.i_heuristic = -1
                     print("It's a tie!")
-                    print(f"{temp.board} \n")
+                    print(f"{print_board(temp.board)} \n")
                     break  # Exit the loop in case of a tie
 
                 # Continue with the maximum or minimum value based on the player
                 if temp.parent.player == "Y":
                     temp.i_heuristic = max(child.i_heuristic for child in temp.children)
-                    print(f"Move Selected: {temp.i_heuristic}")
+                    print(f"Move Selected: {dicionary[temp.i_heuristic]}")
                 else:
                     temp.i_heuristic = min(child.i_heuristic for child in temp.children)
-                    print(f"Move Selected: {temp.i_heuristic}")
+                    print(f"Move Selected: {dicionary[temp.i_heuristic]}")
 
             temp = temp.parent
 # Function to read in test case
