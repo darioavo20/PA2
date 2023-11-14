@@ -482,8 +482,7 @@ def play_human_pmcgs(board):
         print(board)
         if checkWin(board) != 'N': 
             break
-        pmcgs_move = pmcgs(board, 'Y', 10000)
-        full_pmcgs_move = find_tree_move(board, pmcgs_move-1)
+        full_pmcgs_move = pmcgs(board, 'Y', 10000)
         pmcgs_row = full_pmcgs_move[0]
         pmcgs_col = full_pmcgs_move[1]
         board[pmcgs_row][pmcgs_col] = 'Y'
@@ -509,8 +508,8 @@ def play_human_uct(board):
         print(board)
         if checkWin(board) != 'N': 
             break
-        uct_move = uct(board, 'Y', 10000)
-        full_uct_move = find_tree_move(board, uct_move-1)
+        
+        full_uct_move = uct(board, 'Y', 10000)
         uct_row = full_uct_move[0]
         uct_col = full_uct_move[1]
         board[uct_row][uct_col] = 'Y'
