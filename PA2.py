@@ -401,10 +401,10 @@ def find_lowest_available_row(board, column):
 def test_results():
     algorithms = [
         {"name": "UR", "function": uniform_random, "param": True},
-        {"name": "PMCGS_500", "function": pmcgs, "param": 500},
-        {"name": "PMCGS_10000", "function": pmcgs, "param": 10000},
-        {"name": "UCT_500", "function": uct, "param": 500},
-        {"name": "UCT_10000", "function": uct, "param": 10000}
+        {"name": "PMCGS_500", "function": pmcgs, "param": 50},
+        {"name": "PMCGS_10000", "function": pmcgs, "param": 1000},
+        {"name": "UCT_500", "function": uct, "param": 50},
+        {"name": "UCT_10000", "function": uct, "param": 1000}
     ]
 
    
@@ -425,7 +425,7 @@ def test_results():
                     else:
                         move = alg2['function'](board, turn, alg2['param'])
                     
-                    print(move)
+                    
                     board[move[0]][move[1]] = turn
                     
                     
@@ -455,59 +455,7 @@ def test_results():
                 print(f"{alg1['name']} vs {alg2['name']}: Wins: {results[alg1['name']][alg2['name']]['wins']}, Losses: {results[alg1['name']][alg2['name']]['losses']}, Draws: {results[alg1['name']][alg2['name']]['draws']}")
 
 
-
-def ur_vs_pmcgs(board, turn):
-    empty_board = deepcopy(board)
-    if 'R' in turn:
-        turn = 'R'
-    if 'Y' in turn:
-        turn = 'Y'
-
-    #testing UR vs PMCGS (500)
-    ur_pmcgs500_wins = 0
-    ur_pmcgs500_losses = 0
-    ur_pmcgs500_draws = 0
-    for i in range(100):
-        while(True):
-            ur_move = uniform_random(board, turn, True)
-            ur_row = ur_move[0]
-            ur_col = ur_move[1]
-            board[ur_row][ur_col] = turn
-
-            if checkWin(board) != 'N': 
-                break
-            if turn == 'R':
-                turn = 'Y'
-            elif turn == 'Y':
-                turn = 'R'
-            pmcgs_move = pmcgs(board, turn, 500, False)
-            full_pmcgs_move = find_tree_move(board, pmcgs_move-1)
-            pmcgs_row = full_pmcgs_move[0]
-            pmcgs_col = full_pmcgs_move[1]
-            board[pmcgs_row][pmcgs_col] = turn
-
-            if checkWin(board) != 'N': 
-                break
-            if turn == 'R':
-                turn = 'Y'
-            elif turn == 'Y':
-                turn = 'R'
-        if(checkWin(board) == 'R'):
-            ur_pmcgs500_wins += 1
-        elif(checkWin(board) == 'Y'):
-            ur_pmcgs500_losses += 1
-        else:
-            ur_pmcgs500_draws += 1
-        board = empty_board
     
-        board = deepcopy(empty_board)
-    print('UR wins', ur_pmcgs500_wins)
-    print("UR win%:", ur_pmcgs500_wins/100)
-    print("PMCGS500 wins", ur_pmcgs500_losses)
-    print("PMCGS500 win%:", ur_pmcgs500_losses/100)
-    print("UR vs PMCGS500 draws:", ur_pmcgs500_draws)
-    
-
     
 def find_tree_move(board, pmcgs_move):
     moves = find_legal_moves(board)
@@ -577,37 +525,54 @@ def main():
     #preset by programmer for testing purposes
     alternating = False
     algo, arg, turn, board = file_reader(file_name)
-    play_human = input("Would you like to play against an algorithm? (Input then number associated with the desired option) \n 1. PMCGS 10000 \n 2. UCT 10000 \n 3. No \n")
-    if play_human == "1":
-        play_human_pmcgs(board)
-        sys.exit()
-    if play_human == "2":
-        play_human_uct(board)
-        sys.exit()
-    run_tournament = input("Would you like to run the algo tournament (y/n)")
-    if run_tournament == 'y':
-        test_results()
+    while True:
+        print("\nWelcome to Connect Four!")
+        print("Choose an option:")
+        print("1. Run Algorithm from inputted command")
+        print("2. Play Against Algorithm")
+        print("3. Run Algorithm Tournament")
+        print("4. Exit")
+        choice = input("Enter your choice (1-4): ")
 
-    if 'UR' in algo:
-        uniform_random(board,turn,alternating)
+        if choice == "1":
+            if 'UR' in algo:
+                uniform_random(board,turn,alternating)
 
-    if 'DLMM' in algo:
-        root = node(int(arg),board,turn,0)
-        legal = find_legal_moves(root.board)
-        root.createPermutations()
-        root.backprop()
+            if 'DLMM' in algo:
+                root = node(int(arg),board,turn,0)
+                legal = find_legal_moves(root.board)
+                root.createPermutations()
+                root.backprop()
 
-    if "PMCGS" in algo:
-        if output_type == "verbose":
-            pmcgs(board, turn, arg)
+            if "PMCGS" in algo:
+                if output_type == "verbose":
+                    pmcgs(board, turn, arg)
+                else:
+                    pmcgs(board, turn, arg)
+
+            if "UCT" in algo:
+                if output_type == "verbose":
+                    uct(board, turn, arg)
+                else:
+                    uct(board, turn, arg)
+        elif choice == "2":
+            play_human = input("Input then number associated with the desired option \n 1. PMCGS 10000 \n 2. UCT 10000 \n 3. No \n")
+            if play_human == "1":
+                play_human_pmcgs(board)
+                sys.exit()
+            if play_human == "2":
+                play_human_uct(board)
+                sys.exit()
+        elif choice == "3":
+            test_results()
+        elif choice == "4":
+            print("Exiting the game.")
+            break
         else:
-            pmcgs(board, turn, arg)
+            print("Invalid choice. Please enter a number between 1 and 4.")
+        
 
-    if "UCT" in algo:
-        if output_type == "verbose":
-            uct(board, turn, arg)
-        else:
-            uct(board, turn, arg)
+    
 
     
 
