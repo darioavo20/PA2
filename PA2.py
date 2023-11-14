@@ -355,7 +355,10 @@ def print_board(board):
     print()
 
 def pmcgs(board, turn, arg):
-    pmcgs_ai = PMCGS(board, turn.strip())
+    if output_type.strip() == "verbose":
+        pmcgs_ai = PMCGS(board, turn.strip(), True)
+    else:
+        pmcgs_ai = PMCGS(board, turn.strip(), False)
     i = 0
     while i < int(arg):
         if pmcgs_ai.select(pmcgs_ai.root) == -1:
@@ -372,7 +375,10 @@ def pmcgs(board, turn, arg):
     return best_move
     
 def uct(board, turn, arg):
-    uct_ai = PMCGS(board, turn.strip())
+    if output_type.strip() == "verbose":
+        uct_ai = PMCGS(board, turn.strip(), True)
+    else:
+        uct_ai = PMCGS(board, turn.strip(), False)
     i = 0
     while i < int(arg):
         if uct_ai.uct_select(uct_ai.root) == -1:
@@ -476,7 +482,7 @@ def play_human_pmcgs(board):
         print(board)
         if checkWin(board) != 'N': 
             break
-        pmcgs_move = pmcgs(board, 'Y', 10000, False)
+        pmcgs_move = pmcgs(board, 'Y', 10000)
         full_pmcgs_move = find_tree_move(board, pmcgs_move-1)
         pmcgs_row = full_pmcgs_move[0]
         pmcgs_col = full_pmcgs_move[1]
@@ -503,7 +509,7 @@ def play_human_uct(board):
         print(board)
         if checkWin(board) != 'N': 
             break
-        uct_move = uct(board, 'Y', 10000, False)
+        uct_move = uct(board, 'Y', 10000)
         full_uct_move = find_tree_move(board, uct_move-1)
         uct_row = full_uct_move[0]
         uct_col = full_uct_move[1]
@@ -521,12 +527,13 @@ def play_human_uct(board):
 
 def main():
     file_name = sys.argv[1]
+    global output_type
     output_type = sys.argv[2]
     #preset by programmer for testing purposes
     alternating = False
     algo, arg, turn, board = file_reader(file_name)
     while True:
-        print("\nWelcome to Connect Four!")
+        print("\nWelcome to AI Connect Four!")
         print("Choose an option:")
         print("1. Run Algorithm from inputted command")
         print("2. Play Against Algorithm")
@@ -566,7 +573,7 @@ def main():
         elif choice == "3":
             test_results()
         elif choice == "4":
-            print("Exiting the game.")
+            print("Exiting...")
             break
         else:
             print("Invalid choice. Please enter a number between 1 and 4.")
