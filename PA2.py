@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import random
 from pmcgs import PMCGS
+import pdb
 from copy import deepcopy
 
 
@@ -13,7 +14,7 @@ class node():
         self.player = player
         self.children = [] # list of nodes 
         self.parent = parent
-
+    
     def playMove(self, move):
         tempboard = [row.copy() for row in self.board]  # Create a new copy of the board
         tempboard[move[0]][move[1]] = self.player  # Apply the move to the new board
@@ -27,39 +28,52 @@ class node():
             return 'Y'
     
        #Recursive function to 
+    
+
     def createPermutations(self):
-        if self.i_depth > 0:
-            legal = find_legal_moves(self.board)
-            for index in legal:
-                new_board = self.playMove(index)  # Pass a specific move instead of the entire list
-                new_player = self.getOppositePlayer()  # Get the opposite player for the new node
-                #print(f"{print_board(new_board)} \n")
-                self.children.append(node(self.i_depth-1, new_board, new_player, self.i_heuristic,self))
-                #print(f'{self.board} \n')
-            
-            for child in self.children:
-                child.createPermutations()
+        visited = set()
+        stack = [self]
+
+        while stack:
+            current_node = stack.pop()
+            node_key = tuple(map(tuple, current_node.board))
+
+            if node_key in visited:
+                continue
+
+            visited.add(node_key)
+
+            if current_node.i_depth > 0 and current_node.board is not None:
+                legal = find_legal_moves(current_node.board)
+                for index in legal:
+                    new_board = current_node.playMove(index)
+                    new_player = current_node.getOppositePlayer()
+                    if new_board is not None:
+                        child_node = node(current_node.i_depth - 1, new_board, new_player, current_node.i_heuristic, current_node)
+                        current_node.children.append(child_node)
+                        stack.append(child_node)
 
     def getHeuristic(self):
         opponent = 'R' if self.player == 'Y' else 'Y'
 
         winner = checkWin(self.board)
-        #print(f"Current Board:\n{print_board(self.board)}")
-        print(f"Winner: {winner}")
-
+        # print(f"Current Board:\n{print_board(self.board)}")
         if winner == 'R':
-            print("Red wins")
-            return 'R'  # Assign a high value for winning state
+            normalized_consecutive = 'R'
+            return normalized_consecutive
         elif winner == 'Y':
-            print("Yellow wins")
-            return 'Y'  # Assign a low value for losing state
+            normalized_consecutive = 'Y'
+            return normalized_consecutive
         elif all(cell != 'O' for row in self.board for cell in row):
             print("It's a draw")
-            return 'N'  # Assign a value for a draw
+            return
         else:
             # Calculate the new heuristic values
             consecutive_total = self.count_consecutive_total()
             open_ended_total = self.open_ended_consecutive_count()
+
+            # Introduce a small random perturbation to the heuristics to break ties
+            random_perturbation = round(0.01 * random.uniform(-1, 1), 3)
 
             # Normalize the values to be between -1 and 1
             max_value = max(consecutive_total, open_ended_total)
@@ -67,8 +81,9 @@ class node():
             normalized_open_ended = open_ended_total / max_value if max_value != 0 else 0.0
 
             # Combine the normalized values with weights
-            return normalized_consecutive + 0.5 * normalized_open_ended
-        
+            return normalized_consecutive + 0.5 * normalized_open_ended + random_perturbation
+
+            
     def count_consecutive_total(self):
         count = 0
 
@@ -159,39 +174,65 @@ class node():
 
         return consecutive_count
 
-
     def backprop(self):
         temp = self
 
-       
-        for child in temp.children:
-            child.backprop()
+        while temp.children:
+            temp = temp.children[0]
 
-        if not temp.children:
-            temp.i_heuristic = temp.getHeuristic() # this node is a leaf 
-            return
-        
-        dicionary = {}
+        temp = temp.parent  # one before the leaf nodes
+
+        dictionary = {}
         for count, child in enumerate(temp.children):
-            dicionary[count] = child.i_heuristic
-            print(f"column: {count}: {child.i_heuristic} \n")
+            child.i_heuristic = child.getHeuristic()  # Call the method to get the value
+            dictionary[count] = child.i_heuristic
 
-        if temp.i_heuristic == 'R':
-            return
-        if temp.i_heuristic == 'Y':
-            return
-        if temp.i_heuristic == 'N':
-            return
-        
+        # Check if there is a winning move
+        for value in dictionary.values():
+            if value == 'R':  # Update this condition to match your actual winning heuristic value
+                print(f"winner: Red")
+                print("Winning move found! Stop backpropagation.")
+                return
+            if value == 'Y':  # Update this condition to match your actual winning heuristic value
+                print(f"winner: Yellow")
+                print("Winning move found! Stop backpropagation.")
+                return
+            
+            if value == 'N':  # Update this condition to match your actual winning heuristic value
+                print(f"No winners Tie")
+                return
 
-        if temp.parent:
-            temp.i_heuristic = max(dicionary.values()) if temp.parent.player == 'Y'else min(dicionary.values())
-            #alpha > Beta prunne     
-            for key, value in dicionary.items():
-                if value == temp.i_heuristic:
-                    print(f"Testing Move Selected: {key}")
-                    break
-        
+
+        if not dictionary:  # Check if the dictionary is empty
+            print("No children to backpropagate. Exiting.")
+            return
+
+        for col in dictionary.values():
+            print(col)
+
+        # Select the child with the max or min heuristic value
+        temp.i_heuristic = max(dictionary.values()) if temp.player == 'Y' else min(dictionary.values())
+
+        # Find the key corresponding to the selected heuristic value
+        selected_key = None
+        for key, value in dictionary.items():
+            if value == temp.i_heuristic:
+                selected_key = key
+                break
+
+        if selected_key is not None:
+            print(f"Testing Move Selected: {selected_key}")
+            selected_child = temp.children[selected_key]
+
+            # Update the current node with the selected child's move and board
+            temp.board = selected_child.board
+            temp.player = selected_child.player
+
+            # Recursively perform createPermutations and backprop starting from the selected child
+            selected_child.createPermutations()
+            selected_child.backprop()
+
+
 
 # Function to read in test case
 def file_reader(file_name):
