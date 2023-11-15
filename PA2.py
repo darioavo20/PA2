@@ -4,6 +4,7 @@ import random
 from pmcgs import PMCGS
 import pdb
 from copy import deepcopy
+from MinMax import MinMax
 
 
 class node():
@@ -371,7 +372,8 @@ def pmcgs(board, turn, arg):
     
     best_move = pmcgs_ai.choose_best_move()
     pmcgs_ai.print_move_scores()
-    print("FINAL Move selected: ", best_move)
+    if output_type.strip() == "verbose":
+        print("FINAL Move selected: ", best_move)
     return best_move
     
 def uct(board, turn, arg):
@@ -391,7 +393,8 @@ def uct(board, turn, arg):
     
     best_move = uct_ai.choose_best_move()
     uct_ai.print_move_scores()
-    print("FINAL Move selected: ", best_move)
+    if output_type.strip() == "verbose":
+        print("FINAL Move selected: ", best_move)
     return best_move
 
 def create_initial_board():
@@ -407,19 +410,23 @@ def find_lowest_available_row(board, column):
 def test_results():
     algorithms = [
         {"name": "UR", "function": uniform_random, "param": True},
+        {"name": "DLMM_5", "function": dlmm, "param": 5},
         {"name": "PMCGS_500", "function": pmcgs, "param": 50},
         {"name": "PMCGS_10000", "function": pmcgs, "param": 1000},
         {"name": "UCT_500", "function": uct, "param": 50},
         {"name": "UCT_10000", "function": uct, "param": 1000}
+        
     ]
 
    
     results = {alg['name']: {other_alg['name']: {"wins": 0, "losses": 0, "draws": 0} for other_alg in algorithms} for alg in algorithms}
 
     for i, alg1 in enumerate(algorithms):
+        print("new alg1")
         for alg2 in algorithms[i+1:]:
+            print("new alg2")
             for game in range(100):
-                print("new Game")
+                
                
                 board = create_initial_board() 
                 turn = 'R'  
@@ -523,6 +530,12 @@ def play_human_uct(board):
     else:
         print("This was a draw")
 
+def dlmm(board, turn, arg):
+    minmax = MinMax(int(arg), board, turn)
+    best_move, best_value = minmax.depth_limited_minmax()
+    if output_type.strip() == "verbose":
+        print(f"Best move: {best_move}, Score: {best_value}")
+    return best_move
 
 def main():
     file_name = sys.argv[1]
@@ -545,10 +558,10 @@ def main():
                 uniform_random(board,turn,alternating)
 
             if 'DLMM' in algo:
-                root = node(int(arg),board,turn,0)
-                legal = find_legal_moves(root.board)
-                root.createPermutations()
-                root.backprop()
+                dlmm(board, turn,int(arg))
+                
+
+                
 
             if "PMCGS" in algo:
                 if output_type == "verbose":

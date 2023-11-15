@@ -98,48 +98,24 @@ class PMCGS:
         yellow = "Y"
         draw = True
 
-        # check for horizontal win
-        for i in range(height):
-            for j in range(width - 3):
-                if board[i][j] == red and board[i][j+1] == red and board[i][j+2] == red and board[i][j+3] == red:
-                    return red
-                if board[i][j] == yellow and board[i][j+1] == yellow and board[i][j+2] == yellow and board[i][j+3] == yellow:
-                    return yellow
-                
-        # check for vertical win
-        for i in range(height-3):
-            for j in range(width):
-                if board[i][j] == red and board[i+1][j] == red and board[i+2][j] == red and board[i+3][j] == red:
-                    return red
-                if board[i][j] == yellow and board[i+1][j] == yellow and board[i+2][j] == yellow and board[i+3][j] == yellow:
-                    return yellow
-                
-        #check for / diagonal wins
-        for i in range(3, height):
-            for j in range(width -3):
-                if board[i][j] == red and board[i-1][j+1] == red and board[i-2][j+2] == red and board[i-3][j+3] == red:
-                    return red
-                if board[i][j] == yellow and board[i-1][j+1] == yellow and board[i-2][j+2] == yellow and board[i-3][j+3] == yellow:
-                    return yellow
-                
-        #check for \ diagonal wins
-        for i in range(height-3):
-            for j in range(width-3):
-                if board[i][j] == red and board[i+1][j+1] == red and board[i+2][j+2] == red and board[i+3][j+3] == red:
-                    return red
-                if board[i][j] == yellow and board[i+1][j+1] == yellow and board[i+2][j+2] == yellow and board[i+3][j+3] == yellow:
-                    return yellow
-                
-        #check for draw
+        # Check for win conditions
         for i in range(height):
             for j in range(width):
                 if board[i][j] == 'O':
-                    draw = False
-        
-        if draw:
-            return 'D'
-        else:
-            return 'N'
+                    draw = False  # Found an empty cell, not a draw
+                    continue
+                if j <= width - 4:
+                    if board[i][j:j+4] == [red] * 4: return red
+                    if board[i][j:j+4] == [yellow] * 4: return yellow
+                if i <= height - 4:
+                    if all(board[i+n][j] == red for n in range(4)): return red
+                    if all(board[i+n][j] == yellow for n in range(4)): return yellow
+                    if j <= width - 4 and all(board[i+n][j+n] == red for n in range(4)): return red
+                    if j <= width - 4 and all(board[i+n][j+n] == yellow for n in range(4)): return yellow
+                    if j >= 3 and all(board[i+n][j-n] == red for n in range(4)): return red
+                    if j >= 3 and all(board[i+n][j-n] == yellow for n in range(4)): return yellow
+
+        return 'D' if draw else 'N'
 
     def find_legal_moves(self, board):
         legal = []
@@ -198,7 +174,8 @@ class PMCGS:
                     return j 
                 
     def print_move_scores(self):
-        print("Move Scores:")
+        if self.verbose:
+            print("Move Scores:")
         for i, child in enumerate(self.root.children, start=1):
             if child.visits > 0:
                 score = (child.wins - child.losses) / child.visits
