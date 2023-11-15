@@ -341,6 +341,33 @@ def play_human_uct(board):
     else:
         print("This was a draw")
 
+def play_human_dlmm(board):
+    print(board)
+    while True:
+        print('Play one of the following legal moves')
+        moves = find_legal_moves(board)
+        print(moves)
+        user_row = input("Enter row: ")
+        user_col = input("Enter col: ")
+        board[int(user_row)][int(user_col)] = 'R'
+        print(board)
+        if checkWin(board) != 'N': 
+            break 
+        dlmm_move = dlmm(board, 'Y', 5)
+        dlmm_row = dlmm_move[0]
+        dlmm_col = dlmm_move[1]
+        board[dlmm_row][dlmm_col] = 'Y'
+        print(board)
+        if checkWin(board) != 'N': 
+            break
+    if checkWin(board) == 'R':
+        print("You won!")
+    elif checkWin(board) == 'Y':
+        print("You lost!")
+    else:
+        print("This was a draw")
+
+
 def dlmm(board, turn, arg):
     minmax = MinMax(int(arg), board, turn)
     best_move, best_value = minmax.depth_limited_minmax()
@@ -369,10 +396,7 @@ def main():
                 uniform_random(board,turn,alternating)
 
             if 'DLMM' in algo:
-                dlmm(board, turn,int(arg))
-                
-
-                
+                dlmm(board, turn,int(arg))     
 
             if "PMCGS" in algo:
                 if output_type == "verbose":
@@ -386,12 +410,15 @@ def main():
                 else:
                     uct(board, turn, arg)
         elif choice == "2":
-            play_human = input("Input then number associated with the desired option \n 1. PMCGS 10000 \n 2. UCT 10000 \n 3. No \n")
+            play_human = input("Input then number associated with the desired option \n 1. PMCGS 10000 \n 2. UCT 10000 \n 3. DLM 5 \n 4. No \n")
             if play_human == "1":
                 play_human_pmcgs(board)
                 sys.exit()
             if play_human == "2":
                 play_human_uct(board)
+                sys.exit()
+            if play_human == "3":
+                play_human_dlmm(board)
                 sys.exit()
         elif choice == "3":
             test_results()
