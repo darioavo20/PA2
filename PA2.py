@@ -507,9 +507,8 @@ def play_human_uct(board):
         board[int(user_row)][int(user_col)] = 'R'
         print(board)
         if checkWin(board) != 'N': 
-            break
-        uct_move = uct(board, 'Y', 10000, False)
-        full_uct_move = find_tree_move(board, uct_move-1)
+            break 
+        full_uct_move = uct(board, 'Y', 10000)
         uct_row = full_uct_move[0]
         uct_col = full_uct_move[1]
         board[uct_row][uct_col] = 'Y'
