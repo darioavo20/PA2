@@ -2,7 +2,7 @@ import random
 import copy
 from termcolor import colored
 import math
-
+import numpy as np
 
 
 class Node:
@@ -54,8 +54,6 @@ class PMCGS:
         current_state = copy.deepcopy(node.state)
         while True:
             
-            if self.verbose:
-                print("New state in simulation")
                 
 
             winner = self.checkWin(current_state)
@@ -74,7 +72,7 @@ class PMCGS:
             move = random.choice(legal_moves)
             current_state = self.apply_move(current_state, move)
             if self.verbose:
-                print(f"Move selected: {move}, Current turn: {self.turn}")
+                print(f"Move selected: {move[1] + 1}")
             
 
 
@@ -94,28 +92,52 @@ class PMCGS:
     def checkWin(self, board):
         height = len(board)
         width = len(board[0])
-        red = "R"
-        yellow = "Y"
+        red = 'R'
+        yellow = 'Y'
         draw = True
 
-        # Check for win conditions
+        # check for horizontal win
+        for i in range(height):
+            for j in range(width - 3):
+                if board[i][j] == red and board[i][j+1] == red and board[i][j+2] == red and board[i][j+3] == red:
+                    return red
+                if board[i][j] == yellow and board[i][j+1] == yellow and board[i][j+2] == yellow and board[i][j+3] == yellow:
+                    return yellow
+                
+        # check for vertical win
+        for i in range(height-3):
+            for j in range(width):
+                if board[i][j] == red and board[i+1][j] == red and board[i+2][j] == red and board[i+3][j] == red:
+                    return red
+                if board[i][j] == yellow and board[i+1][j] == yellow and board[i+2][j] == yellow and board[i+3][j] == yellow:
+                    return yellow
+                
+        #check for / diagonal wins
+        for i in range(3, height):
+            for j in range(width -3):
+                if board[i][j] == red and board[i-1][j+1] == red and board[i-2][j+2] == red and board[i-3][j+3] == red:
+                    return red
+                if board[i][j] == yellow and board[i-1][j+1] == yellow and board[i-2][j+2] == yellow and board[i-3][j+3] == yellow:
+                    return yellow
+                
+        #check for \ diagonal wins
+        for i in range(height-3):
+            for j in range(width-3):
+                if board[i][j] == red and board[i+1][j+1] == red and board[i+2][j+2] == red and board[i+3][j+3] == red:
+                    return red
+                if board[i][j] == yellow and board[i+1][j+1] == yellow and board[i+2][j+2] == yellow and board[i+3][j+3] == yellow:
+                    return yellow
+                
+        #check for draw
         for i in range(height):
             for j in range(width):
                 if board[i][j] == 'O':
-                    draw = False  # Found an empty cell, not a draw
-                    continue
-                if j <= width - 4:
-                    if board[i][j:j+4] == [red] * 4: return red
-                    if board[i][j:j+4] == [yellow] * 4: return yellow
-                if i <= height - 4:
-                    if all(board[i+n][j] == red for n in range(4)): return red
-                    if all(board[i+n][j] == yellow for n in range(4)): return yellow
-                    if j <= width - 4 and all(board[i+n][j+n] == red for n in range(4)): return red
-                    if j <= width - 4 and all(board[i+n][j+n] == yellow for n in range(4)): return yellow
-                    if j >= 3 and all(board[i+n][j-n] == red for n in range(4)): return red
-                    if j >= 3 and all(board[i+n][j-n] == yellow for n in range(4)): return yellow
-
-        return 'D' if draw else 'N'
+                    draw = False
+        
+        if draw:
+            return 'D'
+        else:
+            return 'N'
 
     def find_legal_moves(self, board):
         legal = []

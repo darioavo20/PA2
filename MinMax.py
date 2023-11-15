@@ -28,15 +28,15 @@ class MinMax:
         height = len(board)
         width = len(board[0])
 
-        # Define scoring for different lengths of connections
+
         scoring = {2: 1, 3: 2, 4: 4}
 
-        # Check horizontal, vertical, and diagonal connections
+
         for row in range(height):
             for col in range(width):
-                for dx, dy in [(1, 0), (0, 1), (1, 1), (1, -1)]:  # directions: horizontal, vertical, diagonal
+                for dx, dy in [(1, 0), (0, 1), (1, 1), (1, -1)]:  
                     count = 0
-                    for d in range(1, 4):  # check up to 3 steps in each direction
+                    for d in range(1, 4):  
                         x, y = col + d * dx, row + d * dy
                         if 0 <= x < width and 0 <= y < height and board[row][col] == board[y][x] and board[row][col] != 'O':
                             count += 1
@@ -51,7 +51,6 @@ class MinMax:
         height = len(board)
         width = len(board[0])
 
-        # Check for potential extendable lines
         for row in range(height):
             for col in range(width):
                 if board[row][col] == 'O':
@@ -63,8 +62,7 @@ class MinMax:
                         if 0 <= x < width and 0 <= y < height:
                             if board[row][col] == board[y][x]:
                                 count += 1
-                            elif board[y][x] == 'O':
-                                # Open space for extension
+                            elif board[y][x] == 'O': 
                                 score += 1 if count >= 2 else 0
                                 break
                             else:
@@ -73,7 +71,7 @@ class MinMax:
         return score
     
     def normalize_score(self, score, max_score, min_score):
-        # Assuming max_score and min_score are known or estimated
+        
         range = max_score - min_score
         normalized = (score - min_score) / range
         return normalized * 2 - 1 

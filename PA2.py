@@ -5,235 +5,7 @@ from pmcgs import PMCGS
 import pdb
 from copy import deepcopy
 from MinMax import MinMax
-
-
-class node():
-    def __init__(self, i_depth, board, player, i_heuristic, parent = None):
-        self.i_depth = i_depth
-        self.i_heuristic = i_heuristic
-        self.board = board
-        self.player = player
-        self.children = [] # list of nodes 
-        self.parent = parent
-    
-    def playMove(self, move):
-        tempboard = [row.copy() for row in self.board]  # Create a new copy of the board
-        tempboard[move[0]][move[1]] = self.player  # Apply the move to the new board
-        return tempboard
-
-    
-    def getOppositePlayer(self):
-        if self.player == 'Y':
-            return 'R'
-        else:
-            return 'Y'
-    
-       #Recursive function to 
-    
-
-    def createPermutations(self):
-        visited = set()
-        stack = [self]
-
-        while stack:
-            current_node = stack.pop()
-            node_key = tuple(map(tuple, current_node.board))
-
-            if node_key in visited:
-                continue
-
-            visited.add(node_key)
-
-            if current_node.i_depth > 0 and current_node.board is not None:
-                legal = find_legal_moves(current_node.board)
-                for index in legal:
-                    new_board = current_node.playMove(index)
-                    new_player = current_node.getOppositePlayer()
-                    if new_board is not None:
-                        child_node = node(current_node.i_depth - 1, new_board, new_player, current_node.i_heuristic, current_node)
-                        current_node.children.append(child_node)
-                        stack.append(child_node)
-
-    def getHeuristic(self):
-        opponent = 'R' if self.player == 'Y' else 'Y'
-
-        winner = checkWin(self.board)
-        # print(f"Current Board:\n{print_board(self.board)}")
-        if winner == 'R':
-            normalized_consecutive = 'R'
-            return normalized_consecutive
-        elif winner == 'Y':
-            normalized_consecutive = 'Y'
-            return normalized_consecutive
-        elif all(cell != 'O' for row in self.board for cell in row):
-            print("It's a draw")
-            return
-        else:
-            # Calculate the new heuristic values
-            consecutive_total = self.count_consecutive_total()
-            open_ended_total = self.open_ended_consecutive_count()
-
-            # Introduce a small random perturbation to the heuristics to break ties
-            random_perturbation = round(0.01 * random.uniform(-1, 1), 3)
-
-            # Normalize the values to be between -1 and 1
-            max_value = max(consecutive_total, open_ended_total)
-            normalized_consecutive = consecutive_total / max_value if max_value != 0 else 0.0
-            normalized_open_ended = open_ended_total / max_value if max_value != 0 else 0.0
-
-            # Combine the normalized values with weights
-            return normalized_consecutive + 0.5 * normalized_open_ended + random_perturbation
-
-            
-    def count_consecutive_total(self):
-        count = 0
-
-    # Check horizontally
-        for row in self.board:
-            count += self.score_consecutive(row)
-
-        # Check vertically
-        for col in range(len(self.board[0])):
-            column = [self.board[row][col] for row in range(len(self.board))]
-            count += self.score_consecutive(column)
-
-        # Check diagonally (top-left to bottom-right)
-        for row in range(len(self.board) - 1):
-            for col in range(len(self.board[0]) - 1):
-                diagonal = [self.board[row + i][col + i] for i in range(min(len(self.board) - row, len(self.board[0]) - col))]
-                count += self.score_consecutive(diagonal)
-
-        # Check diagonally (top-right to bottom-left)
-        for row in range(len(self.board) - 1):
-            for col in range(1, len(self.board[0])):
-                diagonal = [self.board[row + i][col - i] for i in range(min(len(self.board) - row, col + 1))]
-                count += self.score_consecutive(diagonal)
-
-        return count
-
-    def score_consecutive(self, line):
-        current_player = self.player
-        opponent = 1 if current_player == -1 else -1  # Assuming player values are -1 and 1
-        score = 0
-        consecutive_count = 0
-
-        for cell in line:
-            if cell == current_player:
-                consecutive_count += 1
-            elif cell == opponent:
-                consecutive_count = 0
-            else:
-                consecutive_count = 0
-
-            if consecutive_count >= 4:
-                score += 1
-
-        return score
-    
-    def open_ended_consecutive_count(self):
-        count = 0
-
-        # Check horizontally
-        for row in self.board:
-            count += self.count_open_ended_consecutive(row)
-
-        # Check vertically
-        for col in range(len(self.board[0])):
-            column = [self.board[row][col] for row in range(len(self.board))]
-            count += self.count_open_ended_consecutive(column)
-
-        # Check diagonally (top-left to bottom-right)
-        for row in range(len(self.board) - 1):
-            for col in range(len(self.board[0]) - 1):
-                diagonal = [self.board[row + i][col + i] for i in range(min(len(self.board) - row, len(self.board[0]) - col))]
-                count += self.count_open_ended_consecutive(diagonal)
-
-        # Check diagonally (top-right to bottom-left)
-        for row in range(len(self.board) - 1):
-            for col in range(1, len(self.board[0])):
-                diagonal = [self.board[row + i][col - i] for i in range(min(len(self.board) - row, col + 1))]
-                count += self.count_open_ended_consecutive(diagonal)
-
-        return count
-
-    def count_open_ended_consecutive(self, line):
-        current_player = self.player
-        opponent = 1 if current_player == -1 else -1  # Assuming player values are -1 and 1
-        consecutive_count = 0
-
-        for i, cell in enumerate(line):
-            if cell == current_player:
-                consecutive_count += 1
-            elif cell == opponent:
-                consecutive_count = 0
-            else:
-                # Check if the sequence has at least one open end
-                if i - consecutive_count > 0 and i < len(line) - 1 and line[i - consecutive_count - 1] == 0 and line[i + 1] == 0:
-                    consecutive_count += 1
-                else:
-                    consecutive_count = 0
-
-        return consecutive_count
-
-    def backprop(self):
-        temp = self
-
-        while temp.children:
-            temp = temp.children[0]
-
-        temp = temp.parent  # one before the leaf nodes
-
-        dictionary = {}
-        for count, child in enumerate(temp.children):
-            child.i_heuristic = child.getHeuristic()  # Call the method to get the value
-            dictionary[count] = child.i_heuristic
-
-        # Check if there is a winning move
-        for value in dictionary.values():
-            if value == 'R':  # Update this condition to match your actual winning heuristic value
-                print(f"winner: Red")
-                print("Winning move found! Stop backpropagation.")
-                return
-            if value == 'Y':  # Update this condition to match your actual winning heuristic value
-                print(f"winner: Yellow")
-                print("Winning move found! Stop backpropagation.")
-                return
-            
-            if value == 'N':  # Update this condition to match your actual winning heuristic value
-                print(f"No winners Tie")
-                return
-
-
-        if not dictionary:  # Check if the dictionary is empty
-            print("No children to backpropagate. Exiting.")
-            return
-
-        for col in dictionary.values():
-            print(col)
-
-        # Select the child with the max or min heuristic value
-        temp.i_heuristic = max(dictionary.values()) if temp.player == 'Y' else min(dictionary.values())
-
-        # Find the key corresponding to the selected heuristic value
-        selected_key = None
-        for key, value in dictionary.items():
-            if value == temp.i_heuristic:
-                selected_key = key
-                break
-
-        if selected_key is not None:
-            print(f"Testing Move Selected: {selected_key}")
-            selected_child = temp.children[selected_key]
-
-            # Update the current node with the selected child's move and board
-            temp.board = selected_child.board
-            temp.player = selected_child.player
-
-            # Recursively perform createPermutations and backprop starting from the selected child
-            selected_child.createPermutations()
-            selected_child.backprop()
-
-
+import numpy as np
 
 # Function to read in test case
 def file_reader(file_name):
@@ -394,7 +166,7 @@ def uct(board, turn, arg):
     best_move = uct_ai.choose_best_move()
     uct_ai.print_move_scores()
     if output_type.strip() == "verbose":
-        print("FINAL Move selected: ", best_move)
+        print("FINAL Move selected: ", best_move[1] + 1)
     return best_move
 
 def create_initial_board():
@@ -468,8 +240,45 @@ def test_results():
                 print(f"{alg1['name']} vs {alg2['name']}: Wins: {results[alg1['name']][alg2['name']]['wins']}, Losses: {results[alg1['name']][alg2['name']]['losses']}, Draws: {results[alg1['name']][alg2['name']]['draws']}")
 
 
-    
-    
+def test_results_self():
+    algorithms = [
+        {"name": "UR", "function": uniform_random, "param": True},
+        {"name": "DLMM_5", "function": dlmm, "param": 5},
+        {"name": "PMCGS_500", "function": pmcgs, "param": 50},
+        {"name": "PMCGS_10000", "function": pmcgs, "param": 1000},
+        {"name": "UCT_500", "function": uct, "param": 50},
+        {"name": "UCT_10000", "function": uct, "param": 1000}
+    ]
+
+    results = {alg['name']: {"wins": 0, "losses": 0, "draws": 0} for alg in algorithms}
+
+    for alg in algorithms:
+        print(f"Testing {alg['name']}")
+        for game in range(100):
+            board = create_initial_board() 
+            turn = 'R'  
+
+            while True:
+                move = alg['function'](board, turn, alg['param'])
+                board[move[0]][move[1]] = turn
+                    
+                status = checkWin(board).strip()
+                if status != 'N':
+                    if status == 'R':
+                        results[alg['name']]['wins'] += 1
+                    elif status == 'Y':
+                        results[alg['name']]['losses'] += 1
+                    elif status == 'D':
+                        results[alg['name']]['draws'] += 1
+                    break
+                    
+                turn = 'Y' if turn == 'R' else 'R'
+    print("\nTournament Results:")
+    for alg, outcome in results.items():
+        print(f"{alg}: Wins - {outcome['wins']}, Losses - {outcome['losses']}, Draws - {outcome['draws']}")
+    return results
+                
+
 def find_tree_move(board, pmcgs_move):
     moves = find_legal_moves(board)
     for move in moves:
@@ -542,7 +351,7 @@ def dlmm(board, turn, arg):
 def main():
     file_name = sys.argv[1]
     global output_type
-    output_type = sys.argv[2]
+    output_type = sys.argv[2].lower()
     #preset by programmer for testing purposes
     alternating = False
     algo, arg, turn, board = file_reader(file_name)

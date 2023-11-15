@@ -7,6 +7,6 @@ python PA2.py 'test_file' 'output_type'
 
 As an example:
 
-python PA2.py test1.txt Brief
+python PA2.py test1.txt Verbose
 
 Any of the algorithms, as defined in the test files, can play through a game by themselves given a board.
