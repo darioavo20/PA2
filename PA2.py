@@ -468,6 +468,9 @@ def find_tree_move(board, pmcgs_move):
     for move in moves:
         if move[1] == pmcgs_move:
             return move
+        
+def play_human_dlmm(board):
+    return
     
 # method to play with human player
 def play_human_pmcgs(board):
