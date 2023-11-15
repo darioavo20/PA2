@@ -2,7 +2,6 @@ import numpy as np
 import sys
 import random
 from pmcgs import PMCGS
-import pdb
 from copy import deepcopy
 from MinMax import MinMax
 import numpy as np
@@ -28,7 +27,7 @@ def file_reader(file_name):
                         break
                     board[row][column] = char
 
-        #print(f'starting Board:\n {board} \n')
+    
         return algo, arg, turn, board
             
     except Exception as e:
