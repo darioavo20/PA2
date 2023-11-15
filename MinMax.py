@@ -7,18 +7,11 @@ class MinMax:
         self.turn = turn
 
     def heuristic_evaluation(self, board):
-        # Constants to weigh the importance of each factor
         connected_weight = 0.5
         ended_paths_weight = 0.5
-
-        # Calculate the scores for connected pieces and ended paths
         connected_score = self.calculate_connected_score(board)
         ended_paths_score = self.calculate_ended_paths_score(board)
-
-        # Combine the scores
         combined_score = (connected_weight * connected_score) + (ended_paths_weight * ended_paths_score)
-
-        # Normalize the score between -1 and 1
         normalized_score = self.normalize_score(combined_score, 1, -1)
 
         return normalized_score
@@ -149,13 +142,25 @@ class MinMax:
     def depth_limited_minmax(self):
         best_move = None
         best_value = -float('inf')
-        
+        move_values = {}
+
         for move in self.find_legal_moves(self.board):
             new_state = self.apply_move(self.board, move)
             value = self.minmax(new_state, self.depth_limit - 1, False)
+            move_values[move[1]+1] = value  # Storing the value for each column
             if value > best_value:
                 best_value = value
                 best_move = move
+
+        # Print the values for each of the immediate next moves from the root
+        for col in range(1, len(self.board[0]) + 1):
+            print(f"Column {col}: {move_values.get(col, 'Null')}")
+
+        # Print the final move selected
+        if best_move is not None:
+            print(f"FINAL Move selected: {best_move[1] + 1}")
+        else:
+            print("FINAL Move selected: None")
 
         return best_move, best_value
     
