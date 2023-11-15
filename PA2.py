@@ -475,6 +475,9 @@ def find_tree_move(board, pmcgs_move):
     for move in moves:
         if move[1] == pmcgs_move:
             return move
+        
+def play_human_dlmm(board):
+    return
     
 # method to play with human player
 def play_human_pmcgs(board):
@@ -514,8 +517,7 @@ def play_human_uct(board):
         board[int(user_row)][int(user_col)] = 'R'
         print(board)
         if checkWin(board) != 'N': 
-            break
-        
+            break 
         full_uct_move = uct(board, 'Y', 10000)
         uct_row = full_uct_move[0]
         uct_col = full_uct_move[1]
