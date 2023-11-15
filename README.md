@@ -3,7 +3,7 @@ Artificial Intelligence Programming Assignment 2
 
 As per the instructions, the code can be executed through the command line with the following structure:
 
-python PA2.py <test_file> <output_type>
+python PA2.py 'test_file' 'output_type'
 
 As an example:
 
